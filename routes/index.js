@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const { usersController } = require("../controllers");
+const userRouter = require("./users");
+const projectRouter = require("./project");
 
 router.get("/", (req, res) => {
   res.status(200).json({
@@ -9,7 +10,7 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get("/users", usersController.getAllUsers);
-router.get("/users/:id", usersController.getUserById);
+router.use("/users", userRouter);
+router.use("/projects", projectRouter);
 
 module.exports = router;
