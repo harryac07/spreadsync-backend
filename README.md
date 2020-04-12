@@ -23,7 +23,7 @@ CRM => MA<br>
 2. Setup database migrations and seeds<br>
   ```docker-compose run app bash```<br>
   ```npm run migration:update```<br>
-  ```npm run seed```<br>
+  ```npm run migration:seed```<br>
 
 ### Connect to Postgres in db client
 ```psql postgres://postgres@localhost:35432/spreadsyncdb```
