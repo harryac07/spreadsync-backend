@@ -1,7 +1,7 @@
 # Spreadsync
 Development of sheet based sync application. The project will grow to sync different MA-CRM platforms in future.
 
-## Introduction
+## Goal
 
 1. **Goal 1**<br>
 SQL => Spreadsheet<br>
