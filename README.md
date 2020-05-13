@@ -18,23 +18,33 @@ CRM => MA<br>
 ## Getting started locally (First time setup)
 
 1.  Build the image<br>
-```docker-compose up```
+```npm run compose```
 
-2. Setup database migrations and seeds<br>
-  ```docker-compose run app bash```<br>
+2. Open new terminal tab. Follow each steps sequentially to setup database migrations and seeds<br>
+  ```npm run bash```<br>
   ```npm run migration:update```<br>
   ```npm run migration:seed```<br>
+  ```exit```<br>
 
+***
 
-## Run backend server locally
-```npm run compose```
+## Useful commands
+
+### Run backend server locally (uses already built image)
+```npm start```
+
+### Stop running backend server
+```npm run stop```
+
+### Accessing docker bash shell
+```npm run bash```
 
 ### Connect to Postgres in db client
 ```psql postgres://postgres@localhost:35432/spreadsyncdb```
 
 ***
 
-### Docker short-hands
+## Docker short-hands
 
 View running processes:  ```docker ps```<br>
 Open bash shell with service name (node project (app) in our case):  ```docker-compose run app bash```<br>

@@ -6,7 +6,10 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "start": "nodemon index.js",
+    "server": "nodemon index.js",
+    "start": "docker-compose restart && docker-compose logs -f -t --tail 10 app",
+    "stop": "docker-compose stop",
+    "bash": "docker-compose run app bash",
     "compose": "docker-compose up",
     "migration:update": "knex migrate:latest",
     "migration:rollback": "knex migrate:rollback",
