@@ -15,7 +15,7 @@ MA => CRM<br>
 CRM => MA<br>
 
 ***
-## Getting started locally
+## Getting started locally (First time setup)
 
 1.  Build the image<br>
 ```docker-compose up```
@@ -24,6 +24,10 @@ CRM => MA<br>
   ```docker-compose run app bash```<br>
   ```npm run migration:update```<br>
   ```npm run migration:seed```<br>
+
+
+## Run backend server locally
+```npm run compose```
 
 ### Connect to Postgres in db client
 ```psql postgres://postgres@localhost:35432/spreadsyncdb```
