@@ -1,10 +1,9 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.status(200).json({
-    message: "Project router under development",
-  });
-});
+const { projectController } = require('../../controllers');
+
+router.get('/', projectController.getAllProjects);
+router.get('/:id', projectController.getProjectById);
 
 module.exports = router;
