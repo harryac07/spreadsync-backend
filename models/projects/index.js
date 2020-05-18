@@ -21,8 +21,24 @@ const getAllProjects = async () => {
  */
 const getAllProjectsWithOtherRelations = async () => {
   return db('project')
-    .select('project.*', 'account.name as accountName')
-    .leftJoin('account', 'account.id', 'project.account');
+    .select(
+      'project.*',
+      'account.name as accountName',
+      db.raw('i.count::int as total_members'),
+    )
+    .leftJoin('account', 'account.id', 'project.account')
+    .leftJoin(
+      db.raw(`
+        (
+          SELECT
+            u.project,
+            COUNT(*) as count
+          FROM user_involvement u
+          GROUP BY u.project
+        ) i
+        ON i.project = project.id
+      `),
+    );
 };
 
 /**
