@@ -15,9 +15,21 @@ const getAllProjects = async (req, res) => {
 const getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
-    // sooner we will catch this from session i.e. req.locals.userId
     const projects = await Project.getProjectById(id);
     res.status(200).json(projects);
+  } catch (e) {
+    console.error(e.stack);
+    res.status(500).json({
+      message: 'Invalid Request',
+    });
+  }
+};
+
+const getAllJobsForProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const jobs = await Project.getAllJobsByProjectId(id);
+    res.status(200).json(jobs);
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
@@ -29,4 +41,5 @@ const getProjectById = async (req, res) => {
 module.exports = {
   getAllProjects,
   getProjectById,
+  getAllJobsForProject,
 };

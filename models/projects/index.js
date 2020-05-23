@@ -47,13 +47,41 @@ const getAllProjectsWithOtherRelations = async () => {
  * @returns {Array}
  */
 const getProjectById = (projectId = '') => {
-  return db('project').select().where({
-    id: projectId,
-  });
+  return db('project')
+    .select('project.*', db.raw('i.count::int as total_members'))
+    .leftJoin(
+      db.raw(`
+      (
+        SELECT
+          u.project,
+          COUNT(*) as count
+        FROM user_involvement u
+        GROUP BY u.project
+      ) i
+      ON i.project = project.id
+    `),
+    )
+    .where({
+      id: projectId,
+    });
+};
+/**
+ * getAllJobsByProjectId
+ * @param {String}projectId - Lookup projectId
+ * @returns {Array}
+ */
+const getAllJobsByProjectId = (projectId = '') => {
+  return db('job')
+    .select('job.*', 'user.email as user_email', 'user.id as user_id')
+    .leftJoin('user', 'user.id', 'job.created_by')
+    .where({
+      project: projectId,
+    });
 };
 
 module.exports = {
   getAllProjects,
   getProjectById,
   getAllProjectsWithOtherRelations,
+  getAllJobsByProjectId,
 };
