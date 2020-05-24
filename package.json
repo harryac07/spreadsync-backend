@@ -7,7 +7,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "server": "nodemon index.js",
-    "start": "docker-compose restart && docker-compose logs -f -t --tail 10 app",
+    "start": "docker-compose start && docker-compose logs -f -t --tail 10 app",
+    "restart": "docker-compose stop  && npm run start",
     "stop": "docker-compose stop",
     "bash": "docker-compose run app bash",
     "compose": "docker-compose up",
@@ -26,6 +27,7 @@
     "express": "^4.17.1",
     "helmet": "^3.22.0",
     "knex": "^0.20.13",
+    "moment": "^2.26.0",
     "morgan": "^1.9.1",
     "pg": "^8.0.0"
   },

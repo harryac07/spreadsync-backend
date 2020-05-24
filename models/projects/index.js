@@ -1,6 +1,13 @@
 const db = require('../db');
 
 /**
+ * createProject
+ * @returns {Array}
+ */
+const createProject = async (reqPayload) => {
+  return db('project').insert(reqPayload).returning('*');
+};
+/**
  * getAllProjects
  * @returns {Array}
  */
@@ -80,6 +87,7 @@ const getAllJobsByProjectId = (projectId = '') => {
 };
 
 module.exports = {
+  createProject,
   getAllProjects,
   getProjectById,
   getAllProjectsWithOtherRelations,
