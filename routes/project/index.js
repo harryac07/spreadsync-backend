@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { checkPermission } = require('../../middlewares');
 
 const { projectController } = require('../../controllers');
 
@@ -11,5 +12,6 @@ router.get(
   checkPermission,
   projectController.getAllJobsForProject,
 );
+router.get('/:id/jobs', projectController.getAllJobsForProject);
 
 module.exports = router;
