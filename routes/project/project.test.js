@@ -1,6 +1,7 @@
 const supertest = require('supertest');
 const app = require('../../server');
 const Project = require('../../models/projects');
+const auth = require('../../middlewares');
 
 const request = supertest(app);
 
@@ -51,5 +52,33 @@ describe('Project Endpoints', () => {
     expect(response.body).toEqual([projectMockPayload[0]]);
     expect(response.body).toHaveLength(1);
     expect(response.body[0].id).toEqual(projectMockPayload[0].id);
+  });
+
+  it('should create a project', async () => {
+    const projectData = { name: 'test', description: 'Description' };
+    const createPayload = {
+      projectPayload: projectData,
+      invitedUsers: ['test@test.com'],
+    };
+    const spy = jest.spyOn(Project, 'createProject');
+    spy.mockReturnValue([
+      {
+        ...projectData,
+        id: '4b36afc8-5205-49c1-af26-test',
+        admin: '4b36afc8-5205-49c1-af16-admin',
+        account: '4b36afc8-5205-49c1-af16-account',
+        created_on: '2020-05-24T09:53:55.632Z',
+        accountName: 'Test Account',
+      },
+    ]);
+    const response = await request.post(`/api/projects/`).send(createPayload);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].id).toEqual('4b36afc8-5205-49c1-af26-test');
+    expect(response.body[0].description).toEqual('Description');
+    expect(response.body[0].name).toEqual('test');
+    expect(response.body[0].admin).toBeTruthy();
+    expect(response.body[0].account).toBeTruthy();
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });
