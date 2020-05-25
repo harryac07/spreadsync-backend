@@ -3,9 +3,13 @@ const router = express.Router();
 
 const { projectController } = require('../../controllers');
 
-router.get('/', projectController.getAllProjects);
-router.post('/', projectController.createProject);
-router.get('/:id', projectController.getProjectById);
-router.get('/:id/jobs', projectController.getAllJobsForProject);
+router.get('/', checkPermission, projectController.getAllProjects);
+router.post('/', checkPermission, projectController.createProject);
+router.get('/:id', checkPermission, projectController.getProjectById);
+router.get(
+  '/:id/jobs',
+  checkPermission,
+  projectController.getAllJobsForProject,
+);
 
 module.exports = router;
