@@ -30,6 +30,29 @@ Development of sheet based sync application. The project will grow to sync diffe
 
 ---
 
+## Merge request conventions
+
+1.  Always pull latest code before adding fixes/features<br>
+
+2.  Follow standard conventions while creating upporting feature/fix branch.<br>
+
+    #### Feature branch
+
+    ```
+    feature-<feature_name> (Example: feature-auth_implementation, feature-auth-implementation)
+    ```
+
+    #### Bug fix branch
+
+    ```
+    fix-<fix_name) (Example: fix-auth_token_expiration)
+    ```
+
+3.  Include explanatory title and description while creating merge request. <br>
+    For one commit change description is not always necessary, but for larger changes the description is a good way to concisely expand your title and/or commits a bit more.<br>
+
+---
+
 ## Useful commands
 
 ### Run backend server locally (uses already built image)
