@@ -1,4 +1,4 @@
-const { User } = require("../../models");
+const { User } = require('../../models');
 
 const getAllUsers = async (req, res) => {
   try {
@@ -7,7 +7,7 @@ const getAllUsers = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: "Invalid Request",
+      message: 'Invalid Request',
     });
   }
 };
@@ -21,7 +21,7 @@ const getUserById = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: "Invalid Request",
+      message: 'Invalid Request',
     });
   }
 };

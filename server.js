@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const routes = require('./routes');
 
 const app = express();
+require('./middleware/passport');
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -21,11 +22,12 @@ app.use(function (err, req, res, next) {
   if (app.get('env') === 'development') {
     console.log(`${req.method} - ${req.status} '${req.url}'`);
   }
+  /* Later this part can be used for central logging */
   res.status(err.status || 500).json({
-    user_id: req.locals.user.user_id,
+    user_id: req.locals ? req.locals.user.id : undefined,
     url: req.url,
-    message: err.message,
-    error: err.stack,
+    message: err.message || 'Invalid request',
+    // error: err.stack,
   });
 });
 

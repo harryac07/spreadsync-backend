@@ -1,17 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { checkPermission } = require('../../middlewares');
+const { checkAuth } = require('../../middleware');
 
 const { projectController } = require('../../controllers');
 
-router.get('/', checkPermission, projectController.getAllProjects);
-router.post('/', checkPermission, projectController.createProject);
-router.get('/:id', checkPermission, projectController.getProjectById);
-router.get(
-  '/:id/jobs',
-  checkPermission,
-  projectController.getAllJobsForProject,
-);
-router.get('/:id/jobs', projectController.getAllJobsForProject);
+router.get('/', checkAuth, projectController.getAllProjects);
+router.post('/', checkAuth, projectController.createProject);
+router.get('/:id', checkAuth, projectController.getProjectById);
+router.get('/:id/jobs', checkAuth, projectController.getAllJobsForProject);
+router.get('/:id/jobs', checkAuth, projectController.getAllJobsForProject);
 
 module.exports = router;

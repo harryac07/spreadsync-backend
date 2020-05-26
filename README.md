@@ -69,9 +69,16 @@ Development of sheet based sync application. The project will grow to sync diffe
 
 ### Installing new package needs image rebuild
 
-`npm install package_name --save`<br>
-`docker-compose down`<br>
-`docker-compose up`<br>
+1. Rebuild image<br>
+   `npm install package_name --save`<br>
+   `docker-compose down`<br>
+   `docker-compose up --build`<br>
+
+2. Update database migrations and seeds<br>
+   `npm run bash`<br>
+   `npm run migration:update`<br>
+   `npm run migration:seed`<br>
+   `exit`<br>
 
 ### Connect to Postgres in db client
 
