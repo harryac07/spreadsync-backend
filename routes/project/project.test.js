@@ -1,7 +1,7 @@
 const supertest = require('supertest');
 const app = require('../../server');
 const Project = require('../../models/projects');
-const auth = require('../../middlewares');
+const auth = require('../../auth');
 
 const request = supertest(app);
 

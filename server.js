@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const routes = require('./routes');
 
 const app = express();
+require('./auth/auth');
 
 app.use(cors());
 app.use(bodyParser.json());
