@@ -24,7 +24,7 @@ app.use(function (err, req, res, next) {
   }
   /* Later this part can be used for central logging */
   res.status(err.status || 500).json({
-    user_id: req.locals ? req.locals.user.user_id : undefined,
+    user_id: req.locals ? req.locals.user.id : undefined,
     url: req.url,
     message: err.message || 'Invalid request',
     // error: err.stack,

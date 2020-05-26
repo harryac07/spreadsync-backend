@@ -5,15 +5,15 @@ const { sendEmailToUsers } = require('../../util/sendEmail');
 
 const createProject = async (req, res) => {
   try {
-    const { user_id, account_id } = req.locals.user;
+    const { id, account } = req.locals.user;
     const reqPayload = req.body;
     const { projectPayload = {}, invitedUsers = [] } = reqPayload;
 
     /* Create projects */
     const projectResponse = await Project.createProject({
       ...projectPayload,
-      admin: user_id,
-      account: account_id,
+      admin: id,
+      account: account,
     });
     console.log('Project created: ', projectResponse[0].id);
 

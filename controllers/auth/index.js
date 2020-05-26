@@ -42,7 +42,11 @@ const login = async (req, res) => {
             if (error) {
               reject(error);
             } else {
-              const body = { id: user.id, email: user.email };
+              const body = {
+                id: user.id,
+                email: user.email,
+                account: user.account,
+              };
               const token = jwt.sign({ user: body }, process.env.JWT_SECRET, {
                 expiresIn: '24h',
               });

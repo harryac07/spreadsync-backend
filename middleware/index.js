@@ -10,7 +10,7 @@ const checkAuth = (req, res, next) => {
         throw new Error('Invalid token. Authentication failed!');
       }
       req.locals = {};
-      req.locals = token;
+      req.locals.user = token;
       next();
     } catch (e) {
       console.error('error ', e.stack);

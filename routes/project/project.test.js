@@ -1,7 +1,7 @@
 const supertest = require('supertest');
 const app = require('../../server');
 const Project = require('../../models/projects');
-const auth = require('../../auth');
+const User = require('../../models/users');
 
 const request = supertest(app);
 
@@ -28,6 +28,30 @@ const projectMockPayload = [
   },
 ];
 
+let bearerToken = '';
+beforeAll(async () => {
+  const spy = jest.spyOn(User, 'getUserByEmail');
+  spy.mockReturnValue([
+    {
+      id: 'test-user-1234',
+      email: 'test@test.com',
+      password: 'testPwd',
+      account: 'test-account-1111',
+      created_on: '2020-05-13T18:53:36.631Z',
+    },
+  ]);
+  jest.spyOn(User, 'isValidPassword').mockReturnValue(true);
+  const response = await request.post('/api/auth/login').send({
+    email: 'test@test.com',
+    password: 'testPwd',
+  });
+  bearerToken = `bearer ${response.body.token}`;
+});
+
+afterAll(() => {
+  bearerToken = '';
+});
+
 afterEach(() => {
   jest.clearAllMocks();
 });
@@ -36,24 +60,24 @@ describe('Project Endpoints', () => {
   it('should list all projects', async () => {
     const spy = jest.spyOn(Project, 'getAllProjectsWithOtherRelations');
     spy.mockReturnValue(projectMockPayload);
-    const response = await request.get('/api/projects');
+    const response = await request
+      .get('/api/projects')
+      .set('Authorization', bearerToken);
     expect(response.status).toBe(200);
     expect(response.body).toEqual(projectMockPayload);
     expect(response.body).toHaveLength(2);
   });
-
   it('should retrieve each project by id', async () => {
     const spy = jest.spyOn(Project, 'getProjectById');
     spy.mockReturnValue([projectMockPayload[0]]);
-    const response = await request.get(
-      `/api/projects/${projectMockPayload[0].id}`,
-    );
+    const response = await request
+      .get(`/api/projects/${projectMockPayload[0].id}`)
+      .set('Authorization', bearerToken);
     expect(response.status).toBe(200);
     expect(response.body).toEqual([projectMockPayload[0]]);
     expect(response.body).toHaveLength(1);
     expect(response.body[0].id).toEqual(projectMockPayload[0].id);
   });
-
   it('should create a project', async () => {
     const projectData = { name: 'test', description: 'Description' };
     const createPayload = {
@@ -71,7 +95,10 @@ describe('Project Endpoints', () => {
         accountName: 'Test Account',
       },
     ]);
-    const response = await request.post(`/api/projects/`).send(createPayload);
+    const response = await request
+      .post(`/api/projects/`)
+      .set('Authorization', bearerToken)
+      .send(createPayload);
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(1);
     expect(response.body[0].id).toEqual('4b36afc8-5205-49c1-af26-test');
