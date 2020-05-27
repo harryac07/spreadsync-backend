@@ -18,7 +18,7 @@ const signup = async (req, res) => {
       } catch (e) {
         console.error(e.stack);
         res.status(500).json({
-          message: 'Invalid Request',
+          message: error.message || 'Invalid Request',
         });
       }
     },
@@ -56,9 +56,9 @@ const login = async (req, res) => {
         });
         res.status(200).json({ token });
       } catch (error) {
-        console.error(e.stack);
+        console.error(error.stack);
         res.status(500).json({
-          message: 'Invalid Request',
+          message: error.message || 'Invalid Request',
         });
       }
     },

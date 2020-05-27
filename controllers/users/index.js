@@ -7,7 +7,7 @@ const getAllUsers = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: 'Invalid Request',
+      message: error.message || 'Invalid Request',
     });
   }
 };
@@ -21,7 +21,7 @@ const getUserById = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: 'Invalid Request',
+      message: error.message || 'Invalid Request',
     });
   }
 };

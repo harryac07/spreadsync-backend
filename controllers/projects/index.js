@@ -25,7 +25,7 @@ const createProject = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: 'Invalid Request',
+      message: error.message || 'Invalid Request',
     });
   }
 };
@@ -37,7 +37,7 @@ const getAllProjects = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: 'Invalid Request',
+      message: error.message || 'Invalid Request',
     });
   }
 };
@@ -50,7 +50,7 @@ const getProjectById = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: 'Invalid Request',
+      message: error.message || 'Invalid Request',
     });
   }
 };
@@ -63,7 +63,7 @@ const getAllJobsForProject = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: 'Invalid Request',
+      message: error.message || 'Invalid Request',
     });
   }
 };
