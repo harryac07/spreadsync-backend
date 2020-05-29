@@ -11,14 +11,13 @@ const signup = async (req, res) => {
           throw new Error(err);
         }
         if (!user) {
-          throw new Error('Signup failed. Please try again!');
+          throw new Error('User exists already! Try log in.');
         }
-        console.log('ctrl user: ', user);
         res.status(201).json(user);
       } catch (e) {
         console.error(e.stack);
         res.status(500).json({
-          message: error.message || 'Invalid Request',
+          message: e.message || 'Invalid Request',
         });
       }
     },
@@ -48,7 +47,7 @@ const login = async (req, res) => {
                 account: user.account,
               };
               const token = jwt.sign({ user: body }, process.env.JWT_SECRET, {
-                expiresIn: '24h',
+                expiresIn: '12h',
               });
               resolve(token);
             }

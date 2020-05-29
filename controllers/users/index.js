@@ -25,8 +25,22 @@ const getUserById = async (req, res) => {
     });
   }
 };
+const getAllAccountsForUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // sooner we will catch this from session i.e. req.locals.userId
+    const accounts = await User.getAllAccountsForUser(id);
+    res.status(200).json(accounts);
+  } catch (e) {
+    console.error(e.stack);
+    res.status(500).json({
+      message: error.message || 'Invalid Request',
+    });
+  }
+};
 
 module.exports = {
   getAllUsers,
   getUserById,
+  getAllAccountsForUser,
 };

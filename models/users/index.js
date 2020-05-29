@@ -48,6 +48,21 @@ const getUserByEmail = (email = '') => {
 };
 
 /**
+ * getAllAccountsForUser
+ * @param {String}user_id -  user id
+ * @returns {Array}
+ */
+const getAllAccountsForUser = (user_id = '') => {
+  return db('user_involvement AS i')
+    .distinct()
+    .select('account.*', 'i.user')
+    .innerJoin('account', 'account.id', 'i.account')
+    .where({
+      user: user_id,
+    });
+};
+
+/**
  * hashPassword
  * @param {String}plainTextPassword - password to convert to hash
  * @returns {String} hashPassword
@@ -77,6 +92,7 @@ module.exports = {
   getAllUsers,
   getUserById,
   getUserByEmail,
+  getAllAccountsForUser,
   hashPassword,
   isValidPassword,
 };
