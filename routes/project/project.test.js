@@ -62,10 +62,20 @@ describe('Project Endpoints', () => {
     spy.mockReturnValue(projectMockPayload);
     const response = await request
       .get('/api/projects')
-      .set('Authorization', bearerToken);
+      .set('Authorization', bearerToken)
+      .set('account_id', '4b36afc8-5205-49c1-af16-4dc6f96db782');
     expect(response.status).toBe(200);
     expect(response.body).toEqual(projectMockPayload);
     expect(response.body).toHaveLength(2);
+  });
+  it('should fail listing all projects if no accountId is passed in req headers', async () => {
+    const spy = jest.spyOn(Project, 'getAllProjectsWithOtherRelations');
+    spy.mockReturnValue(projectMockPayload);
+    const response = await request
+      .get('/api/projects')
+      .set('Authorization', bearerToken);
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBeTruthy();
   });
   it('should retrieve each project by id', async () => {
     const spy = jest.spyOn(Project, 'getProjectById');
@@ -98,6 +108,7 @@ describe('Project Endpoints', () => {
     const response = await request
       .post(`/api/projects/`)
       .set('Authorization', bearerToken)
+      .set('account_id', '4b36afc8-5205-49c1-af16-4dc6f96db782')
       .send(createPayload);
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(1);

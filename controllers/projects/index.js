@@ -5,7 +5,11 @@ const { sendEmailToUsers } = require('../../util/sendEmail');
 
 const createProject = async (req, res) => {
   try {
-    const { id, account } = req.locals.user;
+    const { id } = req.locals.user;
+    const { account_id } = req.headers;
+    if (!account_id) {
+      throw new Error('Account id is required!');
+    }
     const reqPayload = req.body;
     const { projectPayload = {}, invitedUsers = [] } = reqPayload;
 
@@ -13,7 +17,7 @@ const createProject = async (req, res) => {
     const projectResponse = await Project.createProject({
       ...projectPayload,
       admin: id,
-      account: account,
+      account: account_id,
     });
     console.log('Project created: ', projectResponse[0].id);
 
@@ -25,19 +29,25 @@ const createProject = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: error.message || 'Invalid Request',
+      message: e.message || 'Invalid Request',
     });
   }
 };
 
 const getAllProjects = async (req, res) => {
   try {
-    const projects = await Project.getAllProjectsWithOtherRelations();
+    const { account_id } = req.headers;
+
+    if (!account_id) {
+      throw new Error('Account id is required!');
+    }
+    const filters = { account_id };
+    const projects = await Project.getAllProjectsWithOtherRelations(filters);
     res.status(200).json(projects);
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: error.message || 'Invalid Request',
+      message: e.message || 'Invalid Request',
     });
   }
 };
@@ -50,7 +60,7 @@ const getProjectById = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: error.message || 'Invalid Request',
+      message: e.message || 'Invalid Request',
     });
   }
 };
@@ -63,7 +73,7 @@ const getAllJobsForProject = async (req, res) => {
   } catch (e) {
     console.error(e.stack);
     res.status(500).json({
-      message: error.message || 'Invalid Request',
+      message: e.message || 'Invalid Request',
     });
   }
 };

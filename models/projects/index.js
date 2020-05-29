@@ -2,6 +2,7 @@ const db = require('../db');
 
 /**
  * createProject
+ * @param {Object}filterObj - Filter object pattern object_columnName (Eg. user_id)
  * @returns {Array}
  */
 const createProject = async (reqPayload) => {
@@ -11,7 +12,7 @@ const createProject = async (reqPayload) => {
  * getAllProjects
  * @returns {Array}
  */
-const getAllProjects = async () => {
+const getAllProjects = async (filterObj = {}) => {
   /*   
     ---Raw query example---
     const userRes = await db.raw(`
@@ -19,14 +20,20 @@ const getAllProjects = async () => {
     `);
     return userRes.rows; 
   */
-  return db('project').select();
+  return db('project')
+    .select()
+    .where((builder) => {
+      if (filterObj.account_id)
+        builder.where('project.account', filterObj.account_id);
+    });
 };
 
 /**
  * getAllProjectsWithOtherRelations
+ * @param {Object}filterObj - Filter object pattern object_columnName (Eg. user_id)
  * @returns {Array}
  */
-const getAllProjectsWithOtherRelations = async () => {
+const getAllProjectsWithOtherRelations = async (filterObj = {}) => {
   return db('project')
     .select(
       'project.*',
@@ -45,7 +52,11 @@ const getAllProjectsWithOtherRelations = async () => {
         ) i
         ON i.project = project.id
       `),
-    );
+    )
+    .where((builder) => {
+      if (filterObj.account_id)
+        builder.where('project.account', filterObj.account_id);
+    });
 };
 
 /**

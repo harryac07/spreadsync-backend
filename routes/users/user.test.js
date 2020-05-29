@@ -75,4 +75,28 @@ describe('Users Endpoints', () => {
     expect(response.body).toHaveLength(1);
     expect(response.body[0].id).toEqual(usersMockPayload[0].id);
   });
+
+  it('should retrieve all accounts for user', async () => {
+    const spy = jest.spyOn(User, 'getAllAccountsForUser');
+    spy.mockReturnValue([
+      {
+        id: '4b36afc8-5205-49c1-af16-test',
+        name: 'Test Account 1',
+        created_on: '2020-05-26T21:31:52.905Z',
+        user: 'test-user-1234',
+      },
+      {
+        id: '4b36afc8-5205-49c1-af16-test',
+        name: 'Test Account 2',
+        created_on: '2020-05-26T21:31:52.905Z',
+        user: 'test-user-1234',
+      },
+    ]);
+    const response = await request
+      .get(`/api/users/${usersMockPayload[0].id}/accounts`)
+      .set('Authorization', bearerToken);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(2);
+    expect(response.body[0].user).toEqual('test-user-1234');
+  });
 });
