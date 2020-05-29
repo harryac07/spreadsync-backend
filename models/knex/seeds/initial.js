@@ -3,37 +3,39 @@ exports.seed = async (knex) => {
   try {
     await knex.raw(`BEGIN`);
 
-    await knex('account').del();
-    await knex('account').insert([
-      {
-        id: '4b36afc8-5205-49c1-af16-4d76f96db982',
-        name: 'Test Account 1',
-      },
-      {
-        id: '4b36afc8-5205-49c1-af16-4dc6f96db782',
-        name: 'Test Account 2',
-      },
-    ]);
-
     await knex('user').del();
     await knex('user').insert([
       {
         id: '4b36afc8-5205-49c1-af16-4dc6f96db982',
-        email: 'harryac07@gmail.com',
+        email: 'harryac07+1@gmail.com',
+        password: 'test',
         firstname: 'Hari',
         lastname: 'Adhikari',
         phone: '0449889801',
-        account: '4b36afc8-5205-49c1-af16-4d76f96db982',
-        is_owner: true,
+        is_active: true,
       },
       {
         id: '4b36afc8-5205-49c1-af16-4dc6f96db980',
         email: 'sandeep.thapa@outlook.com',
         firstname: 'Sandeep',
         lastname: 'Thapa',
+        password: 'test',
         phone: '1234567890',
-        account: '4b36afc8-5205-49c1-af16-4d76f96db982',
-        is_owner: false,
+        is_active: false,
+      },
+    ]);
+
+    await knex('account').del();
+    await knex('account').insert([
+      {
+        id: '4b36afc8-5205-49c1-af16-4d76f96db982',
+        name: 'Test Account 1',
+        admin: '4b36afc8-5205-49c1-af16-4dc6f96db982',
+      },
+      {
+        id: '4b36afc8-5205-49c1-af16-4dc6f96db782',
+        name: 'Test Account 2',
+        admin: '4b36afc8-5205-49c1-af16-4dc6f96db980',
       },
     ]);
 
@@ -229,16 +231,16 @@ exports.seed = async (knex) => {
         user: '4b36afc8-5205-49c1-af16-4dc6f96db982',
         project: '4b36afc8-5205-49c1-af26-4dc6f26db982',
         account: '4b36afc8-5205-49c1-af16-4d76f96db982',
-        user_role: '4b36afc8-5205-49c1-af26-1dc6f96db982',
-        user_permission: '4b50afc8-5205-49c1-af26-4dc6f96db982',
+        project_role: '4b36afc8-5205-49c1-af26-1dc6f96db982',
+        project_permission: '4b50afc8-5205-49c1-af26-4dc6f96db982',
       },
       {
         id: '4b52afc8-5205-49c1-af26-4dc6f96db982',
         user: '4b36afc8-5205-49c1-af16-4dc6f96db980',
         project: '4b36afc8-5205-49c1-af26-4dc6f27db982',
         account: '4b36afc8-5205-49c1-af16-4dc6f96db782',
-        user_role: '4b36afc8-5205-49c1-af26-1dc6f96db982',
-        user_permission: '4b50afc8-5205-49c1-af26-4dc6f96db982',
+        project_role: '4b36afc8-5205-49c1-af26-1dc6f96db982',
+        project_permission: '4b50afc8-5205-49c1-af26-4dc6f96db982',
       },
     ]);
     await knex.raw(`COMMIT`);

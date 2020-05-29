@@ -94,8 +94,8 @@ const trigger_insert_into_user_involvement_history = `
       "user",
       project,
       account,
-      user_role,
-      user_permission,
+      project_role,
+      project_permission,
       created_on
     )
     VALUES (
@@ -103,8 +103,8 @@ const trigger_insert_into_user_involvement_history = `
       new."user",
       new.project,
       new.account,
-      new.user_role,
-      new.user_permission,
+      new.project_role,
+      new.project_permission,
       now()
     )
     on conflict do nothing;
