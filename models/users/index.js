@@ -4,10 +4,11 @@ const db = require('../db');
 /**
  * createUser
  * @param {Object}reqPayload - request payload
+ * @param {Object}dbTrx - databse transaction object
  * @returns {Array}
  */
-const createUser = (reqPayload) => {
-  return db('user').insert(reqPayload).returning('*');
+const createUser = (reqPayload, dbTrx = db) => {
+  return dbTrx('user').insert(reqPayload).returning('*');
 };
 
 /**
@@ -48,6 +49,18 @@ const getUserByEmail = (email = '') => {
 };
 
 /**
+ * trackUserAuthToken
+ * @param {Object}payload - payload to store in database
+ * @returns {Array}
+ */
+const trackUserAuthToken = async (payload = {}) => {
+  await db('user')
+    .where({ id: payload.user_id })
+    .update({ active_token: payload.token });
+  return db('user_auth').insert(payload);
+};
+
+/**
  * getAllAccountsForUser
  * @param {String}user_id -  user id
  * @returns {Array}
@@ -59,6 +72,14 @@ const getAllAccountsForUser = (user_id = '') => {
     .innerJoin('account', 'account.id', 'i.account')
     .where({
       user: user_id,
+    })
+    .union(function () {
+      this.select('account.*', 'user.id')
+        .from('account')
+        .innerJoin('user', 'user.id', 'account.admin')
+        .where({
+          admin: user_id,
+        });
     });
 };
 
@@ -93,6 +114,7 @@ module.exports = {
   getUserById,
   getUserByEmail,
   getAllAccountsForUser,
+  trackUserAuthToken,
   hashPassword,
   isValidPassword,
 };

@@ -2,8 +2,11 @@ const passport = require('passport');
 const localStrategy = require('passport-local').Strategy;
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
+const jwt = require('jsonwebtoken');
+const moment = require('moment');
 
-const { User } = require('../models');
+const db = require('../models/db');
+const { User, Account } = require('../models');
 
 //Create a passport middleware to handle user registration
 passport.use(
@@ -22,15 +25,34 @@ passport.use(
           return done(null, false, { message: 'User exists already!' });
         }
         const payload = req.body;
+        const { account_name } = payload;
 
         // hash the provided password
         const hashPassword = await User.hashPassword(password);
 
-        // create user
-        const user = await User.createUser({
-          ...payload,
-          password: hashPassword,
+        let user = [];
+        await db.transaction(async function (trx) {
+          // create user
+          delete payload.account_name;
+          user = await User.createUser(
+            {
+              ...payload,
+              password: hashPassword,
+            },
+            trx,
+          );
+          // create Account
+          if (account_name) {
+            await Account.createAccount(
+              {
+                name: account_name,
+                admin: user[0].id,
+              },
+              trx,
+            );
+          }
         });
+
         // Send the user information to the next middleware
         return done(null, user);
       } catch (error) {
@@ -61,7 +83,24 @@ passport.use(
           return done(null, false, { message: 'Wrong Password' });
         }
 
-        return done(null, user, { message: 'Logged in Successfully!' });
+        const body = {
+          id: user.id,
+          email: user.email,
+        };
+        const token = jwt.sign({ user: body }, process.env.JWT_SECRET, {
+          expiresIn: '12h',
+        });
+
+        /* track new token */
+        const authTokenPayload = {
+          user_id: user.id,
+          last_logged_in: moment().format('YYYY-MM-DD HH:mm:ss'),
+          token: token,
+          is_token_valid: true,
+        };
+        await User.trackUserAuthToken(authTokenPayload);
+
+        return done(null, token, { message: 'Logged in Successfully!' });
       } catch (error) {
         return done(error);
       }

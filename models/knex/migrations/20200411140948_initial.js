@@ -22,6 +22,14 @@ module.exports.up = async (knex) => {
       updated_on TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS user_auth(
+      id SERIAL PRIMARY KEY,
+      user_id UUID REFERENCES "user"(id),
+      last_logged_in TIMESTAMP,
+      token TEXT NOT NULL,
+      is_token_valid BOOLEAN DEFAULT FALSE
+    );
+
     CREATE TABLE IF NOT EXISTS account(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       name text UNIQUE,

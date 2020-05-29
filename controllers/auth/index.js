@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
+const moment = require('moment');
+
+const { User } = require('../../models');
 
 const signup = async (req, res) => {
   passport.authenticate(
@@ -28,31 +31,14 @@ const login = async (req, res) => {
   passport.authenticate(
     'login',
     { session: false },
-    async (err, user, info) => {
+    async (err, token, info) => {
       try {
         if (err) {
           throw new Error(err);
         }
-        if (!user) {
+        if (!token) {
           throw new Error('User not found. Please provide valid credentials!');
         }
-        const token = await new Promise((resolve, reject) => {
-          req.login(user, { session: false }, async (error) => {
-            if (error) {
-              reject(error);
-            } else {
-              const body = {
-                id: user.id,
-                email: user.email,
-                account: user.account,
-              };
-              const token = jwt.sign({ user: body }, process.env.JWT_SECRET, {
-                expiresIn: '12h',
-              });
-              resolve(token);
-            }
-          });
-        });
         res.status(200).json({ token });
       } catch (error) {
         console.error(error.stack);
