@@ -3,7 +3,7 @@ const {
   trigger_insert_into_job_history,
   trigger_insert_into_user_involvement_history,
   trigger_insert_into_job_schedule_history,
-} = require("../triggers");
+} = require('../triggers');
 
 module.exports.up = async (knex) => {
   await knex.raw(`
@@ -12,10 +12,12 @@ module.exports.up = async (knex) => {
 
     CREATE TABLE IF NOT EXISTS "user"(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      email text UNIQUE,
+      email text UNIQUE NOT NULL,
+      password TEXT NOT NULL,
       firstname text,
       lastname text,
       phone text,
+      is_active BOOLEAN DEFAULT FALSE,
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP
     );
@@ -23,7 +25,7 @@ module.exports.up = async (knex) => {
     CREATE TABLE IF NOT EXISTS account(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       name text UNIQUE,
-      owner UUID REFERENCES "user"(id),
+      admin UUID REFERENCES "user"(id),
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP
     );
@@ -135,8 +137,8 @@ module.exports.up = async (knex) => {
       "user" UUID REFERENCES "user"(id),
       project UUID REFERENCES project(id),
       account UUID REFERENCES account(id),
-      user_role UUID REFERENCES user_role(id),
-      user_permission UUID REFERENCES user_permission(id)
+      project_role UUID REFERENCES user_role(id),
+      project_permission UUID REFERENCES user_permission(id)
     );
 
     CREATE TABLE IF NOT EXISTS history.user_involvement_history(
@@ -144,8 +146,8 @@ module.exports.up = async (knex) => {
       "user" UUID REFERENCES "user"(id),
       project UUID REFERENCES project(id),
       account UUID REFERENCES account(id),
-      user_role UUID REFERENCES user_role(id),
-      user_permission UUID REFERENCES user_permission(id),
+      project_role UUID REFERENCES user_role(id),
+      project_permission UUID REFERENCES user_permission(id),
       created_on TIMESTAMP NOT NULL DEFAULT NOW()
     );
 
@@ -155,6 +157,7 @@ module.exports.up = async (knex) => {
       message text,
       status text,
       content text,
+      url text,
       created_on TIMESTAMP NOT NULL DEFAULT NOW()
     );
   `);
