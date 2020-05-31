@@ -143,7 +143,7 @@ const sendEmailConfirmationEmail = async ({ email, firstname, token }) => {
               Please select the confirm button to verify your email account.
             </p>
             <p>
-              <a type="button" class="btn-confirm"  href='${appUrl}/auth/confirmation?token=${token}'>Confirm</a>
+              <a type="button" class="btn-confirm"  href='${appUrl}/confirmation?token=${token}'>Confirm</a>
             </p>
           </td>
         </tr>
