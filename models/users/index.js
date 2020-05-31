@@ -27,6 +27,28 @@ const getAllUsers = async () => {
 };
 
 /**
+ * updateUserById
+ * @param {String}userId - userId to update
+ * @param {Object}reqPayload - request payload
+ * @param {Object}dbTrx - databse transaction object
+ * @returns {Array}
+ */
+const updateUserById = (userId, reqPayload, dbTrx = db) => {
+  return dbTrx('user').update(reqPayload).where({ id: userId }).returning('*');
+};
+
+/**
+ * updateUserByEmail
+ * @param {String}email - email to update
+ * @param {Object}reqPayload - request payload
+ * @param {Object}dbTrx - databse transaction object
+ * @returns {Array}
+ */
+const updateUserByEmail = (email, reqPayload, dbTrx = db) => {
+  return dbTrx('user').update(reqPayload).where({ email }).returning('*');
+};
+
+/**
  * getUserById
  * @param {String}userId - Lookup userId
  * @returns {Array}
@@ -49,14 +71,26 @@ const getUserByEmail = (email = '') => {
 };
 
 /**
+ * createProjectInvolvement
+ * @param {Object}payload - req payload
+ * @param {String}payload.user - user id
+ * @param {String}payload.project - project id
+ * @param {String}payload.account - account id
+ * @param {String}payload.project_role - project_role
+ * @param {String}payload.project_permission - project_permission
+ * @param {Object}dbTrx - databse transaction object
+ * @returns {Array}
+ */
+const createProjectInvolvement = (payload, dbTrx = db) => {
+  return dbTrx('user_involvement').insert(payload).returning('*');
+};
+
+/**
  * trackUserAuthToken
  * @param {Object}payload - payload to store in database
  * @returns {Array}
  */
 const trackUserAuthToken = async (payload = {}) => {
-  await db('user')
-    .where({ id: payload.user_id })
-    .update({ active_token: payload.token });
   return db('user_auth').insert(payload);
 };
 
@@ -111,10 +145,13 @@ const isValidPassword = async (email, password) => {
 module.exports = {
   createUser,
   getAllUsers,
+  updateUserById,
+  updateUserByEmail,
   getUserById,
   getUserByEmail,
   getAllAccountsForUser,
   trackUserAuthToken,
   hashPassword,
   isValidPassword,
+  createProjectInvolvement,
 };

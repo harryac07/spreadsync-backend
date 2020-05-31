@@ -17,6 +17,7 @@ module.exports.up = async (knex) => {
       firstname text,
       lastname text,
       phone text,
+      company text,
       is_active BOOLEAN DEFAULT FALSE,
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP

@@ -8,53 +8,23 @@ const moment = require('moment');
 const db = require('../models/db');
 const { User, Account } = require('../models');
 
-//Create a passport middleware to handle user registration
+// Passport middleware to handle user registration
 passport.use(
   'signup',
   new localStrategy(
     {
       usernameField: 'email',
       passwordField: 'password',
-      passReqToCallback: true,
     },
-    async (req, email, password, done) => {
+    async (email, password, done) => {
       try {
-        // check if user already exists
-        const userRes = await User.getUserByEmail(email);
-        if (userRes.length > 0) {
-          return done(null, false, { message: 'User exists already!' });
+        if (!email) {
+          return done(null, false, { message: 'Email is required!' });
         }
-        const payload = req.body;
-        const { account_name } = payload;
-
-        // hash the provided password
-        const hashPassword = await User.hashPassword(password);
-
-        let user = [];
-        await db.transaction(async function (trx) {
-          // create user
-          delete payload.account_name;
-          user = await User.createUser(
-            {
-              ...payload,
-              password: hashPassword,
-            },
-            trx,
-          );
-          // create Account
-          if (account_name) {
-            await Account.createAccount(
-              {
-                name: account_name,
-                admin: user[0].id,
-              },
-              trx,
-            );
-          }
-        });
-
-        // Send the user information to the next middleware
-        return done(null, user);
+        if (!password) {
+          return done(null, false, { message: 'Password is required!' });
+        }
+        return done(null, true);
       } catch (error) {
         done(error);
       }
@@ -62,7 +32,7 @@ passport.use(
   ),
 );
 
-//Create a passport middleware to handle User login
+// Passport middleware to handle User login
 passport.use(
   'login',
   new localStrategy(
@@ -76,11 +46,13 @@ passport.use(
         const userRes = await User.getUserByEmail(email);
         const user = userRes[0];
         if (!user) {
-          return done(null, false, { message: 'User not found' });
+          return done(null, false, {
+            message: 'User not found. Provide valid email!',
+          });
         }
         const validate = await User.isValidPassword(email, password);
         if (!validate) {
-          return done(null, false, { message: 'Wrong Password' });
+          return done(null, false, { message: 'Password incorrect!' });
         }
 
         const body = {

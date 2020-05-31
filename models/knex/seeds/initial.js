@@ -12,6 +12,7 @@ exports.seed = async (knex) => {
         firstname: 'Hari',
         lastname: 'Adhikari',
         phone: '0449889801',
+        company: 'Spreadsync Oy',
         is_active: true,
       },
       {
@@ -21,6 +22,7 @@ exports.seed = async (knex) => {
         lastname: 'Thapa',
         password: 'test',
         phone: '1234567890',
+        company: 'Spreadsync Oy',
         is_active: false,
       },
     ]);

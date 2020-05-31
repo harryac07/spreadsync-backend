@@ -1,8 +1,67 @@
 const moment = require('moment');
+const db = require('../../models/db');
+const { Project, User } = require('../../models');
+const {
+  sendInvitationEmailToUser,
+  notifyUserForProjectInvitation,
+  generateInvitationToken,
+} = require('../../util/');
 
-const { Project } = require('../../models');
-const { sendEmailToUsers } = require('../../util/sendEmail');
+const _inviteUserToProject = async (
+  account_id,
+  projectId,
+  projectName,
+  invitedUsers,
+) => {
+  /*  Invite users by sending invitation email */
 
+  await db.transaction(async (trx) => {
+    for (let eachUser of invitedUsers) {
+      // check if user exists already in the system
+      const userCheckRes = await User.getUserByEmail(eachUser);
+      const userExists = userCheckRes[0];
+      let user = userExists;
+
+      if (!userExists) {
+        // create user with inactive status
+        const userRes = await User.createUser(
+          {
+            email: eachUser,
+            password: 'temp password',
+          },
+          trx,
+        );
+        user = userRes[0];
+      }
+
+      // create user project involvement
+      await User.createProjectInvolvement(
+        {
+          user: user.id,
+          project: projectId,
+          account: account_id,
+        },
+        trx,
+      );
+      const token = generateInvitationToken({
+        account_id,
+        email: eachUser,
+      });
+      if (userExists) {
+        await notifyUserForProjectInvitation({
+          email: eachUser,
+          project: projectName,
+        });
+      } else {
+        await sendInvitationEmailToUser({
+          email: eachUser,
+          project: projectName,
+          token,
+        });
+      }
+    }
+  });
+};
 const createProject = async (req, res) => {
   try {
     const { id } = req.locals.user;
@@ -13,17 +72,20 @@ const createProject = async (req, res) => {
     const reqPayload = req.body;
     const { projectPayload = {}, invitedUsers = [] } = reqPayload;
 
-    /* Create projects */
+    /* Create project */
     const projectResponse = await Project.createProject({
       ...projectPayload,
       admin: id,
       account: account_id,
     });
-    console.log('Project created: ', projectResponse[0].id);
+    console.log('Project created: ', projectResponse[0].name);
 
-    /*  Invite users by sending invitation email */
-    // Yet to be implemented
-    await sendEmailToUsers(invitedUsers, projectResponse[0].id);
+    await _inviteUserToProject(
+      account_id,
+      projectResponse[0].id,
+      projectResponse[0].name,
+      invitedUsers,
+    );
 
     res.status(200).json(projectResponse);
   } catch (e) {
