@@ -1,8 +1,5 @@
 const moment = require('moment');
 const passport = require('passport');
-const localStrategy = require('passport-local').Strategy;
-const JWTstrategy = require('passport-jwt').Strategy;
-const ExtractJWT = require('passport-jwt').ExtractJwt;
 const jwt = require('jsonwebtoken');
 
 const db = require('../../models/db');
@@ -50,7 +47,7 @@ const _createUserAndAccount = async (payload = {}) => {
           payload.firstname.charAt(0).toUpperCase() +
           payload.firstname.substr(1).toLowerCase(),
         token: jwt.sign(
-          { user_id: user[0].id, is_active: true },
+          { user_id: user[0].id },
           process.env.INVITATION_JWT_SECRET,
         ),
       });
@@ -158,18 +155,54 @@ const login = async (req, res) => {
   passport.authenticate(
     'login',
     { session: false },
-    async (err, token, info) => {
+    async (err, data, info) => {
       try {
         if (err) {
           throw new Error(err);
         }
-        if (!token) {
+        if (!data) {
           throw new Error(
             info.message
               ? info.message
               : 'User not found. Please provide valid credentials!',
           );
         }
+        const payload = req.body;
+        const { email, password } = payload;
+
+        //Find the user associated with the email provided by the user
+        const userRes = await User.getUserByEmail(email);
+        const user = userRes[0];
+        if (!user) {
+          throw new Error('User not found. Provide valid email!');
+        }
+        const validate = await User.isValidPassword(email, password);
+        if (!validate) {
+          throw new Error('Password incorrect!');
+        }
+
+        if (!user.is_active) {
+          throw new Error(
+            'User has not confirmed email yet. Please check your email and verify.',
+          );
+        }
+        const body = {
+          id: user.id,
+          email: user.email,
+        };
+        const token = jwt.sign({ user: body }, process.env.JWT_SECRET, {
+          expiresIn: '12h',
+        });
+
+        /* track new token */
+        const authTokenPayload = {
+          user_id: user.id,
+          last_logged_in: moment().format('YYYY-MM-DD HH:mm:ss'),
+          token: token,
+          is_token_valid: true,
+        };
+        await User.trackUserAuthToken(authTokenPayload);
+
         res.status(200).json({ token });
       } catch (error) {
         console.error(error.stack);
@@ -181,7 +214,43 @@ const login = async (req, res) => {
   )(req, res);
 };
 
+const activateUser = async (req, res) => {
+  try {
+    const { token } = req.body;
+    // verify token is valid
+    var decoded = jwt.verify(token, process.env.INVITATION_JWT_SECRET) || {};
+    const { user_id } = decoded;
+    if (!user_id) {
+      throw new Error('Invalid token');
+    }
+    const userRes = await User.getUserById(user_id);
+    const user = userRes[0];
+
+    if (userRes.length === 0) {
+      throw new Error('User not found');
+    }
+
+    if (user.is_active) {
+      throw new Error('Token is no longer valid!');
+    }
+
+    /* Acticate user */
+    await User.updateUserById(user_id, {
+      is_active: true,
+    });
+    res.status(200).json({
+      message: 'User activated successfully!',
+    });
+  } catch (error) {
+    console.error(error.stack);
+    res.status(500).json({
+      message: error.message || 'Invalid Request',
+    });
+  }
+};
+
 module.exports = {
   signup,
   login,
+  activateUser,
 };

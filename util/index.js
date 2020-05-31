@@ -155,11 +155,6 @@ const sendEmailConfirmationEmail = async ({ email, firstname, token }) => {
             </p>
           </td>
         </tr>
-        <tr>
-          <td>
-            If you don’t recognize this activity, please <a class="contact_us" href="mailto:${process.env.EMAIL_SENDER_ACCOUNT}">contact us</a>.
-          </td>
-        </tr>
       </table>
     </body>
   </html>
