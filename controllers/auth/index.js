@@ -74,16 +74,36 @@ const _updateUser = async (payload = {}, token) => {
     if (decoded.email && decoded.email !== payload.email) {
       throw new Error('invalid token');
     }
+
+    let user = [];
+    const { account_name } = payload;
+
     // hash the provided password
     const hashPassword = await User.hashPassword(payload.password);
 
     // create user and account
-    delete payload.account_name;
-    // delete payload.email;
-    const user = await User.updateUserByEmail(payload.email, {
-      ...payload,
-      password: hashPassword,
-      is_active: true,
+    await db.transaction(async function (trx) {
+      // update user
+      delete payload.account_name;
+      user = await User.updateUserByEmail(
+        payload.email,
+        {
+          ...payload,
+          password: hashPassword,
+          is_active: true,
+        },
+        trx,
+      );
+      // create Account
+      if (account_name) {
+        await Account.createAccount(
+          {
+            name: account_name,
+            admin: user[0].id,
+          },
+          trx,
+        );
+      }
     });
     return user;
   } catch (e) {
