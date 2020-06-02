@@ -25,7 +25,25 @@ const getAllAccounts = async () => {
   return db('account').select();
 };
 
+/**
+ * getAccountByAccountName
+ * @param {String}accountName - accountName
+ * @param {Boolean}allFields - return all fields from the table
+ * @returns {Array}
+ */
+const getAccountByAccountName = async (accountName = '', allFields = false) => {
+  if (allFields) {
+    return db('account')
+      .select()
+      .where(db.raw('LOWER("name") = ?', `${accountName.toLowerCase()}`));
+  }
+  return db('account')
+    .select('id', 'name')
+    .where(db.raw('LOWER("name") = ?', `${accountName.toLowerCase()}`));
+};
+
 module.exports = {
   createAccount,
   getAllAccounts,
+  getAccountByAccountName,
 };
