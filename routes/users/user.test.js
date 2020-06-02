@@ -34,9 +34,11 @@ beforeAll(async () => {
       email: 'test@test.com',
       password: 'testPwd',
       created_on: '2020-05-13T18:53:36.631Z',
+      is_active: true,
     },
   ]);
   jest.spyOn(User, 'isValidPassword').mockReturnValue(true);
+  jest.spyOn(User, 'trackUserAuthToken').mockReturnValue(true);
   const response = await request.post('/api/auth/login').send({
     email: 'test@test.com',
     password: 'testPwd',
@@ -63,7 +65,6 @@ describe('Users Endpoints', () => {
     expect(response.body).toEqual(usersMockPayload);
     expect(response.body).toHaveLength(2);
   });
-
   it('should retrieve each user by id', async () => {
     const spy = jest.spyOn(User, 'getUserById');
     spy.mockReturnValue([usersMockPayload[0]]);
@@ -75,7 +76,6 @@ describe('Users Endpoints', () => {
     expect(response.body).toHaveLength(1);
     expect(response.body[0].id).toEqual(usersMockPayload[0].id);
   });
-
   it('should retrieve all accounts for user', async () => {
     const spy = jest.spyOn(User, 'getAllAccountsForUser');
     spy.mockReturnValue([

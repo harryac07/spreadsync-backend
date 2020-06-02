@@ -2,6 +2,10 @@ const supertest = require('supertest');
 const app = require('../../server');
 const Project = require('../../models/projects');
 const User = require('../../models/users');
+const util = require('../../util/');
+const db = require('../../models/db');
+
+jest.mock('../../util/');
 
 const request = supertest(app);
 
@@ -38,9 +42,11 @@ beforeAll(async () => {
       password: 'testPwd',
       account: 'test-account-1111',
       created_on: '2020-05-13T18:53:36.631Z',
+      is_active: true,
     },
   ]);
   jest.spyOn(User, 'isValidPassword').mockReturnValue(true);
+  jest.spyOn(User, 'trackUserAuthToken').mockReturnValue(true);
   const response = await request.post('/api/auth/login').send({
     email: 'test@test.com',
     password: 'testPwd',
@@ -48,8 +54,10 @@ beforeAll(async () => {
   bearerToken = `bearer ${response.body.token}`;
 });
 
-afterAll(() => {
+afterAll(async (done) => {
   bearerToken = '';
+  await db.destroy();
+  done();
 });
 
 afterEach(() => {
@@ -74,6 +82,7 @@ describe('Project Endpoints', () => {
     const response = await request
       .get('/api/projects')
       .set('Authorization', bearerToken);
+    // .set('account_id', '4b36afc8-5205-49c1-af16-4dc6f96db782');
     expect(response.status).toBe(500);
     expect(response.body.message).toBeTruthy();
   });
@@ -89,13 +98,16 @@ describe('Project Endpoints', () => {
     expect(response.body[0].id).toEqual(projectMockPayload[0].id);
   });
   it('should create a project', async () => {
-    const projectData = { name: 'test', description: 'Description' };
+    const projectData = {
+      name: 'test',
+      description: 'Description',
+    };
     const createPayload = {
       projectPayload: projectData,
       invitedUsers: ['test@test.com'],
     };
     const spy = jest.spyOn(Project, 'createProject');
-    spy.mockReturnValue([
+    spy.mockResolvedValueOnce([
       {
         ...projectData,
         id: '4b36afc8-5205-49c1-af26-test',
@@ -105,6 +117,18 @@ describe('Project Endpoints', () => {
         accountName: 'Test Account',
       },
     ]);
+    jest.spyOn(User, 'getUserByEmail').mockResolvedValueOnce([
+      {
+        id: 'test-user-1234',
+        email: 'test@test.com',
+        password: 'testPwd',
+        created_on: '2020-05-13T18:53:36.631Z',
+        is_active: true,
+      },
+    ]);
+    jest.spyOn(User, 'createProjectInvolvement').mockResolvedValueOnce(true);
+    util.generateInvitationToken.mockResolvedValueOnce(true);
+
     const response = await request
       .post(`/api/projects/`)
       .set('Authorization', bearerToken)
