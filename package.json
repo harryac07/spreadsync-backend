@@ -7,7 +7,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "server": "nodemon index.js",
-    "start": "docker-compose start && docker-compose logs -f -t --tail 10 app",
+    "start": "docker-compose start && docker-compose logs -f -t --tail 20 app",
     "restart": "docker-compose stop  && npm run start",
     "stop": "docker-compose stop",
     "bash": "docker-compose run app bash",
