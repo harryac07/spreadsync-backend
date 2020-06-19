@@ -66,15 +66,17 @@ const trigger_insert_into_job_schedule_history = `
     INSERT into history.job_schedule_history(
       job_schedule,
       job,
-      type,
-      frequency,
+      frequency_name,
+      value,
+      unit,
       created_on
     )
     VALUES (
       new.id,
       new.job,
-      new.type,
-      new.frequency,
+      new.frequency_name,
+      new.value,
+      new.unit,
       now()
     )
     on conflict do nothing;

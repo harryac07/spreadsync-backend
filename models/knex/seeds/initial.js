@@ -133,8 +133,9 @@ exports.seed = async (knex) => {
       {
         id: '4b36afc8-5205-49c1-af26-4bd6f96db167',
         job: '4b36afc8-5205-49c1-af26-4bc6f96db982',
-        type: 'automatic',
-        frequency: '1 hours',
+        frequency_name: 'fixed',
+        value: 1,
+        unit: 'days',
       },
     ]);
 

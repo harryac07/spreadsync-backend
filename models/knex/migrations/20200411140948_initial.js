@@ -102,8 +102,9 @@ module.exports.up = async (knex) => {
     CREATE TABLE IF NOT EXISTS job_schedule(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       job UUID REFERENCES job(id),
-      type text, --manual or automatic
-      frequency text,
+      frequency_name text, --fixed or scheduled
+      value int,
+      unit text, --minutes, hours, days, months
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP
     );
@@ -111,8 +112,9 @@ module.exports.up = async (knex) => {
     CREATE TABLE IF NOT EXISTS history.job_schedule_history(
       job_schedule UUID REFERENCES job_schedule(id),
       job UUID REFERENCES job(id),
-      type text, --manual or automatic
-      frequency text,
+      frequency_name text,
+      value text,
+      unit text,
       created_on TIMESTAMP
     );
 
