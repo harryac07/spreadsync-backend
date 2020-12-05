@@ -5,13 +5,18 @@ const jwt = require('jsonwebtoken');
 const db = require('../../models/db');
 const { User, Account } = require('../../models');
 
+const GoogleApi = require('../../util/googleAuth');
 const { sendEmailConfirmationEmail } = require('../../util/');
 /**
  * _createUserAndAccount
  * @param {Object} payload - req payload
+ * @param {Boolean} sendConfirmationEmail - send confirmation email. True by default
  * @returns {Array} created user response array
  **/
-const _createUserAndAccount = async (payload = {}) => {
+const _createUserAndAccount = async (
+  payload = {},
+  sendConfirmationEmail = true,
+) => {
   try {
     let user = [];
     const { account_name } = payload;
@@ -26,7 +31,7 @@ const _createUserAndAccount = async (payload = {}) => {
         {
           ...payload,
           password: hashPassword,
-          is_active: false,
+          is_active: sendConfirmationEmail ? false : true,
         },
         trx,
       );
@@ -40,17 +45,19 @@ const _createUserAndAccount = async (payload = {}) => {
           trx,
         );
       }
-      // send confirmation email
-      await sendEmailConfirmationEmail({
-        email: payload.email,
-        firstname:
-          payload.firstname.charAt(0).toUpperCase() +
-          payload.firstname.substr(1).toLowerCase(),
-        token: jwt.sign(
-          { user_id: user[0].id },
-          process.env.INVITATION_JWT_SECRET,
-        ),
-      });
+      if (sendConfirmationEmail) {
+        // send confirmation email
+        await sendEmailConfirmationEmail({
+          email: payload.email,
+          firstname:
+            payload.firstname.charAt(0).toUpperCase() +
+            payload.firstname.substr(1).toLowerCase(),
+          token: jwt.sign(
+            { user_id: user[0].id },
+            process.env.INVITATION_JWT_SECRET,
+          ),
+        });
+      }
     });
     return user;
   } catch (e) {
@@ -118,6 +125,34 @@ const _updateUser = async (payload = {}, token) => {
       'Database error occured while creating user. Please try again!',
     );
   }
+};
+
+/**
+ * _signAndGetAuthToken
+ * @param {String} token - invitation token
+ * @returns {Object} token payload
+ **/
+const _signAndGetAuthToken = (userObject) => {
+  const token = jwt.sign(
+    {
+      user: {
+        id: userObject.id,
+        email: userObject.email,
+      },
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: '12h',
+    },
+  );
+
+  const authTokenPayload = {
+    user_id: userObject.id,
+    last_logged_in: moment().format('YYYY-MM-DD HH:mm:ss'),
+    token: token,
+    is_token_valid: true,
+  };
+  return authTokenPayload;
 };
 
 const signup = async (req, res) => {
@@ -206,24 +241,14 @@ const login = async (req, res) => {
             'User has not confirmed email yet. Please check your email and verify.',
           );
         }
-        const body = {
-          id: user.id,
-          email: user.email,
-        };
-        const token = jwt.sign({ user: body }, process.env.JWT_SECRET, {
-          expiresIn: '12h',
-        });
 
-        /* track new token */
-        const authTokenPayload = {
-          user_id: user.id,
-          last_logged_in: moment().format('YYYY-MM-DD HH:mm:ss'),
-          token: token,
-          is_token_valid: true,
-        };
+        const authTokenPayload = _signAndGetAuthToken({
+          email: user.email,
+          id: user.id,
+        });
         await User.trackUserAuthToken(authTokenPayload);
 
-        res.status(200).json({ token });
+        res.status(200).json({ token: authTokenPayload.token });
       } catch (error) {
         console.error(error.stack);
         res.status(500).json({
@@ -232,6 +257,52 @@ const login = async (req, res) => {
       }
     },
   )(req, res);
+};
+
+const loginAuth = async (req, res) => {
+  const { authCode, auth = '' } = req.body;
+  try {
+    if (auth !== 'google' || !authCode) {
+      throw new Error('Authentication not allowed!');
+    }
+
+    const googleClient = new GoogleApi(authCode);
+    await googleClient.getAccessToken();
+    const userDetails = await googleClient.getUserDetails();
+
+    const userRes = await User.getUserByEmail(userDetails.email);
+    let user = userRes[0];
+    if (!user.email) {
+      // create new user to DB but dont send confirmation email
+      user = await _createUserAndAccount(
+        {
+          email: userDetails.email,
+          password: userDetails.email + moment(),
+          firstname: userDetails.given_name,
+          lastname: userDetails.family_name,
+          account_name: `Account ${userDetails.email}`,
+        },
+        false,
+      );
+    }
+
+    if (!user.is_active) {
+      throw new Error('User is not active!');
+    }
+
+    const authTokenPayload = _signAndGetAuthToken({
+      email: user.email,
+      id: user.id,
+    });
+    await User.trackUserAuthToken(authTokenPayload);
+
+    res.status(200).json({ token: authTokenPayload.token });
+  } catch (error) {
+    console.error(error.stack);
+    res.status(500).json({
+      message: error.message || 'Invalid Request',
+    });
+  }
 };
 
 const activateUser = async (req, res) => {
@@ -272,5 +343,6 @@ const activateUser = async (req, res) => {
 module.exports = {
   signup,
   login,
+  loginAuth,
   activateUser,
 };
