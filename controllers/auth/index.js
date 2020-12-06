@@ -272,9 +272,9 @@ const loginAuth = async (req, res) => {
 
     const userRes = await User.getUserByEmail(userDetails.email);
     let user = userRes[0];
-    if (!user.email) {
+    if (userRes.length === 0) {
       // create new user to DB but dont send confirmation email
-      user = await _createUserAndAccount(
+      const createdUser = await _createUserAndAccount(
         {
           email: userDetails.email,
           password: userDetails.email + moment(),
@@ -284,6 +284,7 @@ const loginAuth = async (req, res) => {
         },
         false,
       );
+      user = createdUser[0];
     }
 
     if (!user.is_active) {
