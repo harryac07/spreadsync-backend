@@ -19,14 +19,16 @@ Development of sheet based sync application. The project will grow to sync diffe
 
 ## Getting started locally (First time setup)
 
-1.  Build the image<br>
-    `npm run compose`
+1.  Install node_modules and build the image<br>
+    `npm install`<br>
+    `npm run compose-up`<br>
 
-2.  Open new terminal tab. Follow each steps sequentially to setup database migrations and seeds<br>
-    `npm run bash`<br>
-    `npm run migration:update`<br>
-    `npm run migration:seed`<br>
-    `exit`<br>
+## Installing new package (Needs image rebuild)
+
+1.  Rebuild image<br>
+    `npm install package_name --save`<br>
+    `npm run compose-down`<br>
+    `npm run compose-up`<br>
 
 ---
 
@@ -49,7 +51,7 @@ Development of sheet based sync application. The project will grow to sync diffe
     ```
 
 3.  Include explanatory title and description while creating merge request. <br>
-    For one commit change description is not always necessary, but for larger changes the description is a good way to concisely expand your title and/or commits a bit more.<br>
+    For a single commit change, description is not always necessary, but for larger changes, the description is a good way to concisely expand your title and/or commits a bit more.<br>
 
 ---
 
@@ -66,19 +68,6 @@ Development of sheet based sync application. The project will grow to sync diffe
 ### Accessing docker bash shell
 
 `npm run bash`
-
-### Installing new package needs image rebuild
-
-1. Rebuild image<br>
-   `npm install package_name --save`<br>
-   `docker-compose down`<br>
-   `docker-compose up --build`<br>
-
-2. Update database migrations and seeds<br>
-   `npm run bash`<br>
-   `npm run migration:update`<br>
-   `npm run migration:seed`<br>
-   `exit`<br>
 
 ### Connect to Postgres in db client
 

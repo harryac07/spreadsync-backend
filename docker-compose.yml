@@ -14,7 +14,11 @@ services:
       PORT: 3001
     ports:
       - '3001:3001'
-    command: npm run server
+    # command: /wait-for-it.sh postgres:5432 -- npm run migrate
+    command: >
+      sh -c "/wait-for-it.sh postgres:5432 &&
+             npm run migrate &&
+             npm run server"
     volumes:
       - .:/app/
       - /app/node_modules

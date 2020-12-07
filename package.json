@@ -15,10 +15,11 @@
     "stop": "docker-compose stop",
     "bash": "docker-compose run app bash",
     "compose-down": "docker-compose down",
-    "compose": "docker-compose up --build",
+    "compose-up": "docker-compose up --build",
     "migration:update": "knex --knexfile src/knexfile.ts migrate:latest",
     "migration:rollback": "knex --knexfile src/knexfile.ts migrate:rollback",
     "migration:seed": "knex --knexfile src/knexfile.ts seed:run",
+    "migrate": "npm run migration:update && npm run migration:seed",
     "env": "gen-env-types .env -o src/env.d.ts -e ."
   },
   "keywords": [],
