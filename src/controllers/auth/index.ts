@@ -26,7 +26,7 @@ type CreateUserAndAccountType = {
  * @param {Boolean} sendConfirmationEmail - send confirmation email. True by default
  * @returns {Array} created user response array
  **/
-const _createUserAndAccount = async (
+export const _createUserAndAccount = async (
   payload: CreateUserAndAccountType | any,
   sendConfirmationEmail = true,
 ): Promise<any[]> => {
@@ -74,7 +74,7 @@ const _createUserAndAccount = async (
     });
     return user;
   } catch (e) {
-    console.error(e);
+    console.log(e.stack);
     throw new Error(
       'Database error occured while creating user account. Please try again!',
     );

@@ -7,7 +7,7 @@ import {
   generateInvitationToken,
 } from '../../util/';
 
-const _inviteUserToProject = async (
+export const _inviteUserToProject = async (
   account_id,
   projectId,
   projectName,

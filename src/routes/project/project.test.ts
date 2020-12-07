@@ -1,11 +1,12 @@
 import * as  supertest from 'supertest';
-import * as  app from '../../server';
+import app from '../../server';
 import Project from '../../models/projects';
 import User from '../../models/users';
-import * as util from '../../util/';
-import db from '../../models/db';
+import * as projectCtrl from '../../controllers/projects';
 
 jest.mock('../../util/');
+jest.mock('../../models/db');
+jest.mock('knex');
 
 const request = supertest(app);
 
@@ -56,8 +57,11 @@ beforeAll(async () => {
 
 afterAll(async (done) => {
   bearerToken = '';
-  await db.destroy();
   done();
+});
+
+beforeEach(() => {
+  console.error = jest.fn();
 });
 
 afterEach(() => {
@@ -106,28 +110,20 @@ describe('Project Endpoints', () => {
       projectPayload: projectData,
       invitedUsers: ['test@test.com'],
     };
-    const spy = jest.spyOn(Project, 'createProject');
-    spy.mockResolvedValueOnce([
-      {
-        ...projectData,
-        id: '4b36afc8-5205-49c1-af26-test',
-        admin: '4b36afc8-5205-49c1-af16-admin',
-        account: '4b36afc8-5205-49c1-af16-account',
-        created_on: '2020-05-24T09:53:55.632Z',
-        accountName: 'Test Account',
-      },
-    ]);
-    jest.spyOn(User, 'getUserByEmail').mockResolvedValueOnce([
-      {
-        id: 'test-user-1234',
-        email: 'test@test.com',
-        password: 'testPwd',
-        created_on: '2020-05-13T18:53:36.631Z',
-        is_active: true,
-      },
-    ]);
-    jest.spyOn(User, 'createProjectInvolvement').mockResolvedValueOnce([]);
-    jest.spyOn(util, 'generateInvitationToken').mockReturnValueOnce("test");
+
+    const inviteUserToProjectSpy = jest.spyOn(projectCtrl, '_inviteUserToProject').mockResolvedValue();
+
+    const spy = jest.spyOn(Project, 'createProject')
+      .mockResolvedValueOnce([
+        {
+          ...projectData,
+          id: '4b36afc8-5205-49c1-af26-test',
+          admin: '4b36afc8-5205-49c1-af16-admin',
+          account: '4b36afc8-5205-49c1-af16-account',
+          created_on: '2020-05-24T09:53:55.632Z',
+          accountName: 'Test Account',
+        },
+      ]);
 
     const response = await request
       .post(`/api/projects/`)
@@ -142,5 +138,6 @@ describe('Project Endpoints', () => {
     expect(response.body[0].admin).toBeTruthy();
     expect(response.body[0].account).toBeTruthy();
     expect(spy).toHaveBeenCalledTimes(1);
+    expect(inviteUserToProjectSpy).toHaveBeenCalledTimes(1);
   });
 });

@@ -2,7 +2,11 @@ import * as supertest from 'supertest';
 import app from '../../server';
 import User from '../../models/users';
 
+
 const request = supertest(app);
+
+jest.mock('../../models/db');
+jest.mock('knex');
 
 const usersMockPayload = [
   {
@@ -48,6 +52,10 @@ beforeAll(async () => {
 
 afterAll(() => {
   bearerToken = '';
+});
+
+beforeEach(() => {
+  console.error = jest.fn();
 });
 
 afterEach(() => {
