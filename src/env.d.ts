@@ -1,3 +1,6 @@
+
+import jwt from 'jsonwebtoken';
+
 declare namespace NodeJS {
   export interface ProcessEnv {
     DB_HOST: string;
@@ -5,8 +8,8 @@ declare namespace NodeJS {
     DB_NAME: string;
     DB_PASSWORD: string;
     DB_PORT: string;
-    JWT_SECRET: string;
-    INVITATION_JWT_SECRET: string;
+    JWT_SECRET: jwt.Secret;
+    INVITATION_JWT_SECRET: jwt.Secret;
     EMAIL_SENDER_SMTP_HOST: string;
     EMAIL_SENDER_ACCOUNT: string;
     EMAIL_SENDER_PASSWORD: string;

@@ -1,4 +1,4 @@
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { sendEmail } from './nodemailer';
 
 const appUrl = 'http://localhost:3000';
@@ -168,7 +168,7 @@ const sendEmailConfirmationEmail = async ({ email, firstname, token }) => {
  * */
 const generateInvitationToken = (payload: any): any => {
   /* using different jwt secret than normal login flow for security concern */
-  const token = jwt.sign(payload, process.env.INVITATION_JWT_SECRET);
+  const token = jwt.sign(payload, process.env.INVITATION_JWT_SECRET as jwt.Secret);
   return token;
 };
 

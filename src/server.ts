@@ -1,11 +1,11 @@
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 dotenv.config();
-import * as cors from 'cors';
-import * as express from 'express';
+import cors from 'cors';
+import express from 'express';
 import { /* Request, Response,  */Application } from "express";
-import * as  bodyParser from 'body-parser';
-import * as morgan from 'morgan';
-import * as helmet from 'helmet';
+import bodyParser from 'body-parser';
+import morgan from 'morgan';
+import helmet from 'helmet';
 
 import routes from './routes/';
 

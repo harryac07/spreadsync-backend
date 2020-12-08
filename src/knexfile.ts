@@ -1,5 +1,4 @@
-import * as dotenv from 'dotenv';
-require('ts-node/register');
+import dotenv from 'dotenv';
 dotenv.config();
 
 module.exports = {

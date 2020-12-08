@@ -1,4 +1,4 @@
-import * as passport from 'passport';
+import passport from 'passport';
 
 const checkAuth = (req, res, next) => {
   passport.authenticate('jwt', { session: false }, async (err, token) => {

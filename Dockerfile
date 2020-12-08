@@ -4,18 +4,19 @@ WORKDIR /app
 
 COPY ./package.json .
 COPY ./wait-for-it.sh /wait-for-it.sh
+COPY ./docker-entrypoint.sh /docker-entrypoint.sh
 
+RUN chmod +x /wait-for-it.sh
+RUN chmod +x /docker-entrypoint.sh
 
 RUN npm install
 
 ADD . .
 
-RUN npm install pm2 -g
+RUN npm install nodemon -g
 
 RUN npm run build
 
-RUN chmod +x /wait-for-it.sh
-
 EXPOSE 3001
 
-CMD npm run server
+ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -1,5 +1,5 @@
-import * as supertest from 'supertest';
-import * as passport from 'passport';
+import supertest from 'supertest';
+import passport from 'passport';
 import app from '../../server';
 import Account from '../../models/accounts';
 import User from '../../models/users';

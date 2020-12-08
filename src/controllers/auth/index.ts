@@ -1,6 +1,6 @@
-import * as moment from 'moment';
-import * as passport from 'passport';
-import * as jwt from 'jsonwebtoken';
+import moment from 'moment';
+import passport from 'passport';
+import jwt from 'jsonwebtoken';
 
 import db from '../../models/db';
 import { User, Account } from '../../models';
@@ -67,7 +67,7 @@ export const _createUserAndAccount = async (
             payload.firstname.substr(1).toLowerCase(),
           token: jwt.sign(
             { user_id: user[0].id },
-            process.env.INVITATION_JWT_SECRET,
+            process.env.INVITATION_JWT_SECRET as jwt.Secret,
           ),
         });
       }
@@ -89,7 +89,7 @@ export const _createUserAndAccount = async (
 const _updateUser = async (payload: CreateUserAndAccountType, token: string): Promise<any[]> => {
   try {
     // verify token is valid
-    const decoded = jwt.verify(token, process.env.INVITATION_JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.INVITATION_JWT_SECRET as jwt.Secret);
     if ((decoded as JwtDecodedType).email && (decoded as JwtDecodedType).email !== payload.email) {
       throw new Error('invalid token');
     }
@@ -158,7 +158,7 @@ const _signAndGetAuthToken = (userObject: { id: string; email: string }): {
         email: userObject.email,
       },
     },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET as jwt.Secret,
     {
       expiresIn: '12h',
     },
@@ -328,7 +328,7 @@ const activateUser = async (req, res) => {
   try {
     const { token } = req.body;
     // verify token is valid
-    const decoded = jwt.verify(token, process.env.INVITATION_JWT_SECRET) || {};
+    const decoded = jwt.verify(token, process.env.INVITATION_JWT_SECRET as jwt.Secret) || {};
     const { user_id } = decoded as JwtDecodedType;
     if (!user_id) {
       throw new Error('Invalid token');

@@ -1,4 +1,4 @@
-import * as  supertest from 'supertest';
+import supertest from 'supertest';
 import app from '../../server';
 import Project from '../../models/projects';
 import User from '../../models/users';

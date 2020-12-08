@@ -1,4 +1,4 @@
-import * as passport from 'passport';
+import passport from 'passport';
 import { Strategy as localStrategy } from 'passport-local';
 import { Strategy as JWTstrategy } from 'passport-jwt';
 import { ExtractJwt } from 'passport-jwt';

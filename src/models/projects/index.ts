@@ -12,14 +12,7 @@ const createProject = async (reqPayload) => {
  * getAllProjects
  * @returns {Array}
  */
-const getAllProjects = async (filterObj: { account_id?: string } = {}) => {
-  /*   
-    ---Raw query example---
-    const userRes = await db.raw(`
-      SELECT * FROM "project";
-    `);
-    return userRes.rows; 
-  */
+const getAllProjects = async (filterObj: { account_id?: string }) => {
   return db('project')
     .select()
     .where((builder) => {

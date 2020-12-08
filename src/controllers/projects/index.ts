@@ -1,5 +1,4 @@
-// import * as  moment from 'moment';
-import db from '../../models/db';
+import dbClient from '../../models/db';
 import { Project, User } from '../../models';
 import {
   sendInvitationEmailToUser,
@@ -7,15 +6,16 @@ import {
   generateInvitationToken,
 } from '../../util/';
 
+
 export const _inviteUserToProject = async (
-  account_id,
-  projectId,
-  projectName,
-  invitedUsers,
-) => {
+  account_id: string,
+  projectId: string,
+  projectName: string,
+  invitedUsers: string[],
+): Promise<void> => {
   /*  Invite users by sending invitation email */
 
-  await db.transaction(async (trx) => {
+  await dbClient.transaction(async (trx) => {
     for (const eachUser of invitedUsers) {
       // check if user exists already in the system
       const userCheckRes = await User.getUserByEmail(eachUser);
@@ -105,6 +105,7 @@ const getAllProjects = async (req, res) => {
     }
     const filters = { account_id };
     const projects = await Project.getAllProjectsWithOtherRelations(filters);
+    console.log('projects ', projects);
     res.status(200).json(projects);
   } catch (e) {
     console.error(e.stack);

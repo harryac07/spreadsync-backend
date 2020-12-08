@@ -1,4 +1,4 @@
-import * as nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
 
 /**
  * This will be replaced by AWS SES or something else in future versions

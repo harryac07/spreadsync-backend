@@ -1,4 +1,4 @@
-import * as knex from 'knex';
+import knex from 'knex';
 
 exports.seed = async (knex: knex) => {
   // Deletes ALL existing entries and populate

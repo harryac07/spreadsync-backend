@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import Knex from 'knex';
 import {
   trigger_insert_into_subscription_history,
   trigger_insert_into_job_history,
