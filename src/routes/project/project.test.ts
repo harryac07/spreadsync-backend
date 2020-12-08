@@ -3,6 +3,7 @@ import app from '../../server';
 import Project from '../../models/projects';
 import User from '../../models/users';
 import * as projectCtrl from '../../controllers/projects';
+import { Project as ProjectTypes, ProjectWithRelations } from 'src/types';
 
 jest.mock('../../util/');
 jest.mock('../../models/db');
@@ -10,7 +11,7 @@ jest.mock('knex');
 
 const request = supertest(app);
 
-const projectMockPayload = [
+const projectMockPayload: Array<ProjectTypes & { accountName: string; }> = [
   {
     id: '4b36afc8-5205-49c1-af26-4dc6f26db982',
     name: 'Test project',
@@ -41,7 +42,8 @@ beforeAll(async () => {
       id: 'test-user-1234',
       email: 'test@test.com',
       password: 'testPwd',
-      account: 'test-account-1111',
+      firstname: 'test',
+      lastname: 'testa',
       created_on: '2020-05-13T18:53:36.631Z',
       is_active: true,
     },
@@ -121,7 +123,6 @@ describe('Project Endpoints', () => {
           admin: '4b36afc8-5205-49c1-af16-admin',
           account: '4b36afc8-5205-49c1-af16-account',
           created_on: '2020-05-24T09:53:55.632Z',
-          accountName: 'Test Account',
         },
       ]);
 

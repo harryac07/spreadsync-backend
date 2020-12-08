@@ -1,4 +1,4 @@
-import * as  bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import db from '../db';
 import { UserType } from '../../types';
 
@@ -65,7 +65,7 @@ const getUserById = (userId = '') => {
  * @param {String}email - Lookup email
  * @returns {Array}
  */
-const getUserByEmail = (email = ''): Promise<any[]> => {
+const getUserByEmail = (email: string): Promise<UserType[]> => {
   return db('user').select().where({
     email,
   });

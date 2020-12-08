@@ -1,18 +1,19 @@
 import db from '../db';
+import { Project, ProjectWithRelations, JobListWithProject } from 'src/types';
 
 /**
  * createProject
- * @param {Object}filterObj - Filter object pattern object_columnName (Eg. user_id)
+ * @param {Object}reqPayload - request payload
  * @returns {Array}
  */
-const createProject = async (reqPayload) => {
+const createProject = async (reqPayload: Pick<Project, "name" | "description" | "account" | "admin">): Promise<Project[]> => {
   return db('project').insert(reqPayload).returning('*');
 };
 /**
  * getAllProjects
  * @returns {Array}
  */
-const getAllProjects = async (filterObj: { account_id?: string }) => {
+const getAllProjects = async (filterObj: { account_id?: string } = {}): Promise<Project[]> => {
   return db('project')
     .select()
     .where((builder) => {
@@ -26,7 +27,7 @@ const getAllProjects = async (filterObj: { account_id?: string }) => {
  * @param {Object}filterObj - Filter object pattern object_columnName (Eg. user_id)
  * @returns {Array}
  */
-const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string }) => {
+const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string }): Promise<ProjectWithRelations[]> => {
   return db('project')
     .select(
       'project.*',
@@ -57,7 +58,7 @@ const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string
  * @param {String}projectId - Lookup projectId
  * @returns {Array}
  */
-const getProjectById = (projectId = '') => {
+const getProjectById = (projectId: string): Promise<ProjectWithRelations[]> => {
   return db('project')
     .select('project.*', db.raw('i.count::int as total_members'))
     .leftJoin(
@@ -81,7 +82,7 @@ const getProjectById = (projectId = '') => {
  * @param {String}projectId - Lookup projectId
  * @returns {Array}
  */
-const getAllJobsByProjectId = (projectId = '') => {
+const getAllJobsByProjectId = (projectId: string): Promise<JobListWithProject> => {
   return db('job')
     .select('job.*', 'user.email as user_email', 'user.id as user_id')
     .leftJoin('user', 'user.id', 'job.created_by')

@@ -1,4 +1,4 @@
-import * as  express from 'express';
+import express from 'express';
 import { router as userRouter } from './users';
 import { router as projectRouter } from './project';
 import { router as authRouter } from './auth';

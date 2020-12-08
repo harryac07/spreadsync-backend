@@ -1,4 +1,4 @@
-export type UserType = {
+export interface UserType {
   email: string;
   password?: string;
   id: string;
@@ -6,7 +6,9 @@ export type UserType = {
   lastname: string;
   phone?: string;
   company?: string;
-  is_active: true,
+  is_active?: true,
+  created_on?: any;
+  updated_on?: any;
 };
 
 export interface Project {
@@ -15,6 +17,8 @@ export interface Project {
   description: string;
   admin: string;
   account: string;
+  created_on?: any;
+  updated_on?: any;
 }
 
 export interface Account {
@@ -31,18 +35,15 @@ export interface Job {
   project: string;
   script: string;
   created_by: string;
+  created_on: any;
+  updated_on: any;
 }
 
-export interface ProjectWithRelations {
-  id: string,
-  name: string;
-  description: string;
-  admin: string;
-  account: string;
-  created_on: string;
-  updated_on: string;
+export type JobListWithProject = Array<Job & { user_email: string, user_id: string }>
+
+export type ProjectWithRelations = Project & {
   accountName: string;
-  total_members?: any;
+  total_members?: string | number;
 }
 
 export type JwtDecodedType = {

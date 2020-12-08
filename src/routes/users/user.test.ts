@@ -39,6 +39,8 @@ beforeAll(async () => {
       password: 'testPwd',
       created_on: '2020-05-13T18:53:36.631Z',
       is_active: true,
+      firstname: 'test',
+      lastname: 'test',
     },
   ]);
   jest.spyOn(User, 'isValidPassword').mockResolvedValue(true);

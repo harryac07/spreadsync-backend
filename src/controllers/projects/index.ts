@@ -1,5 +1,6 @@
 import dbClient from '../../models/db';
 import { Project, User } from '../../models';
+import { Project as ProjectTypes, ProjectWithRelations, JobListWithProject } from 'src/types';
 import {
   sendInvitationEmailToUser,
   notifyUserForProjectInvitation,
@@ -7,12 +8,19 @@ import {
 } from '../../util/';
 
 
-export const _inviteUserToProject = async (
+type InviteUserToProject = (
   account_id: string,
   projectId: string,
   projectName: string,
   invitedUsers: string[],
-): Promise<void> => {
+) => Promise<void>;
+
+export const _inviteUserToProject: InviteUserToProject = async (
+  account_id: string,
+  projectId: string,
+  projectName: string,
+  invitedUsers: string[],
+) => {
   /*  Invite users by sending invitation email */
 
   await dbClient.transaction(async (trx) => {
@@ -73,13 +81,11 @@ const createProject = async (req, res) => {
     const { projectPayload = {}, invitedUsers = [] } = reqPayload;
 
     /* Create project */
-    const projectResponse = await Project.createProject({
+    const projectResponse: ProjectTypes[] = await Project.createProject({
       ...projectPayload,
       admin: id,
       account: account_id,
     });
-    console.log('Project created: ', projectResponse[0].name);
-
     await _inviteUserToProject(
       account_id,
       projectResponse[0].id,
@@ -104,8 +110,7 @@ const getAllProjects = async (req, res) => {
       throw new Error('Account id is required!');
     }
     const filters = { account_id };
-    const projects = await Project.getAllProjectsWithOtherRelations(filters);
-    console.log('projects ', projects);
+    const projects: ProjectWithRelations[] = await Project.getAllProjectsWithOtherRelations(filters);
     res.status(200).json(projects);
   } catch (e) {
     console.error(e.stack);
@@ -118,7 +123,7 @@ const getAllProjects = async (req, res) => {
 const getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
-    const projects = await Project.getProjectById(id);
+    const projects: ProjectWithRelations[] = await Project.getProjectById(id);
     res.status(200).json(projects);
   } catch (e) {
     console.error(e.stack);
@@ -131,7 +136,7 @@ const getProjectById = async (req, res) => {
 const getAllJobsForProject = async (req, res) => {
   try {
     const { id } = req.params;
-    const jobs = await Project.getAllJobsByProjectId(id);
+    const jobs: JobListWithProject = await Project.getAllJobsByProjectId(id);
     res.status(200).json(jobs);
   } catch (e) {
     console.error(e.stack);
