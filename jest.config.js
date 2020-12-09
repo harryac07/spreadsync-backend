@@ -9,4 +9,5 @@ module.exports = {
     '^.+\\.(ts)$': 'ts-jest',
   },
   testEnvironment: 'node',
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/build'],
 };

@@ -1,11 +1,10 @@
 import supertest from 'supertest';
 import passport from 'passport';
 import app from '../../server';
-import Account from '../../models/accounts';
 import User from '../../models/users';
-import * as util from '../../util/';
 import GoogleApi from '../../util/googleAuth';
 import * as authCtrl from '../../controllers/auth/index';
+import { UserType } from 'src/types';
 
 const request = supertest(app);
 
@@ -25,6 +24,14 @@ const signupPayload = {
   password: 'SpreadsyncPwd!',
 };
 
+const createUserAndAccountPayload: UserType[] = [{
+  id: '12345',
+  email: signupPayload.email,
+  is_active: true,
+  firstname: signupPayload.firstname,
+  lastname: signupPayload.lastname
+}]
+
 beforeEach(() => {
   (passport.authenticate as jest.Mock) = jest.fn((authType, options, callback) => () => {
     callback(null, true);
@@ -38,7 +45,7 @@ afterEach(() => {
 
 describe('Auth endpoints', () => {
   it('should successfully create account with username password method', async () => {
-    jest.spyOn(authCtrl, '_createUserAndAccount').mockResolvedValue([{ email: 'test@example.com', is_active: true }]);
+    jest.spyOn(authCtrl, '_createUserAndAccount').mockResolvedValue(createUserAndAccountPayload);
     (User.getUserByEmail as jest.Mock).mockResolvedValue([]);
 
     const response = await request.post('/api/auth/signup').send(signupPayload);
@@ -100,7 +107,7 @@ describe('Auth endpoints', () => {
 
   it('should signup successfully with google auth', async () => {
     const authCode = 'tester123456789';
-    jest.spyOn(authCtrl, '_createUserAndAccount').mockResolvedValue([{ email: 'test@example.com', is_active: true }]);
+    jest.spyOn(authCtrl, '_createUserAndAccount').mockResolvedValue(createUserAndAccountPayload);
     GoogleApi.prototype.getAccessToken = jest.fn().mockReturnValueOnce(
       Promise.resolve({
         token_id: '123455',

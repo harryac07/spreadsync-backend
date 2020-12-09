@@ -1,6 +1,9 @@
 import bcrypt from 'bcryptjs';
 import db from '../db';
-import { UserType } from '../../types';
+import { UserType, CreateUserPayload, UpdateUserPayload, UserInvolvement, UserInvolvementPayload, UserAuth, Account } from 'src/types';
+import Knex from 'knex';
+
+type UpdateUserById = (userId: string, reqPayload: UpdateUserPayload, db?: Knex) => Promise<UserType[]>;
 
 /**
  * createUser
@@ -8,7 +11,7 @@ import { UserType } from '../../types';
  * @param {Object}dbTrx - databse transaction object
  * @returns {Array}
  */
-const createUser = (reqPayload, dbTrx = db) => {
+const createUser = (reqPayload: CreateUserPayload, dbTrx: Knex = db): Promise<UserType[]> => {
   return dbTrx('user').insert(reqPayload).returning('*');
 };
 
@@ -16,7 +19,7 @@ const createUser = (reqPayload, dbTrx = db) => {
  * getAllUsers
  * @returns {Array}
  */
-const getAllUsers = async (): Promise<UserType | any[]> => {
+const getAllUsers = async (): Promise<UserType[]> => {
   /*   
     ---Raw query example---
     const userRes = await db.raw(`
@@ -34,7 +37,7 @@ const getAllUsers = async (): Promise<UserType | any[]> => {
  * @param {Object}dbTrx - databse transaction object
  * @returns {Array}
  */
-const updateUserById = (userId, reqPayload, dbTrx = db) => {
+const updateUserById: UpdateUserById = (userId, reqPayload, dbTrx = db) => {
   return dbTrx('user').update(reqPayload).where({ id: userId }).returning('*');
 };
 
@@ -54,7 +57,7 @@ const updateUserByEmail = (email, reqPayload, dbTrx = db): Promise<any[]> => {
  * @param {String}userId - Lookup userId
  * @returns {Array}
  */
-const getUserById = (userId = '') => {
+const getUserById = (userId: string): Promise<UserType[]> => {
   return db('user').select().where({
     id: userId,
   });
@@ -82,7 +85,7 @@ const getUserByEmail = (email: string): Promise<UserType[]> => {
  * @param {Object}dbTrx - databse transaction object
  * @returns {Array}
  */
-const createProjectInvolvement = (payload, dbTrx = db) => {
+const createProjectInvolvement = (payload: UserInvolvementPayload, dbTrx: Knex = db): Promise<UserInvolvement[]> => {
   return dbTrx('user_involvement').insert(payload).returning('*');
 };
 
@@ -91,7 +94,7 @@ const createProjectInvolvement = (payload, dbTrx = db) => {
  * @param {Object}payload - payload to store in database
  * @returns {Array}
  */
-const trackUserAuthToken = async (payload = {}): Promise<void> => {
+const trackUserAuthToken = async (payload: UserAuth): Promise<void> => {
   return db('user_auth').insert(payload);
 };
 
@@ -100,7 +103,7 @@ const trackUserAuthToken = async (payload = {}): Promise<void> => {
  * @param {String}user_id -  user id
  * @returns {Array}
  */
-const getAllAccountsForUser = (user_id = '') => {
+const getAllAccountsForUser = (user_id: string): Promise<Array<Account & { user: string }>> => {
   return db('account')
     .select('account.*', 'user.id as user')
     .from('account')
@@ -124,7 +127,7 @@ const getAllAccountsForUser = (user_id = '') => {
  * @param {String}plainTextPassword - password to convert to hash
  * @returns {String} hashPassword
  */
-const hashPassword = async (plainTextPassword) => {
+const hashPassword = async (plainTextPassword: string): Promise<string> => {
   const hash = await bcrypt.hash(plainTextPassword, 10);
   return hash;
 };
@@ -135,7 +138,7 @@ const hashPassword = async (plainTextPassword) => {
  * @param {String}password - password to compare
  * @returns {Boolean}
  */
-const isValidPassword = async (email, password) => {
+const isValidPassword = async (email: string, password: string): Promise<boolean> => {
   const userRes = await getUserByEmail(email);
   const user = userRes[0] || {};
   //Hashes the password sent by the user for login and checks if the hashed password stored in the

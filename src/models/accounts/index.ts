@@ -1,4 +1,6 @@
 import db from '../db';
+import Knex from 'knex';
+import { Account, AccountPayload } from 'src/types';
 
 /**
  * createAccount
@@ -6,7 +8,10 @@ import db from '../db';
  * @param {Object}dbTrx - databse transaction object
  * @returns {Array}
  */
-const createAccount = (reqPayload, dbTrx = db) => {
+const createAccount = (
+  reqPayload: AccountPayload,
+  dbTrx: Knex = db
+): Promise<Account[]> => {
   return dbTrx('account').insert(reqPayload).returning('*');
 };
 
@@ -14,14 +19,7 @@ const createAccount = (reqPayload, dbTrx = db) => {
  * getAllAccounts
  * @returns {Array}
  */
-const getAllAccounts = async () => {
-  /*   
-    ---Raw query example---
-    const userRes = await db.raw(`
-      SELECT * FROM "user";
-    `);
-    return userRes.rows; 
-  */
+const getAllAccounts = async (): Promise<Account[]> => {
   return db('account').select();
 };
 
@@ -31,7 +29,10 @@ const getAllAccounts = async () => {
  * @param {Boolean}allFields - return all fields from the table
  * @returns {Array}
  */
-const getAccountByAccountName = async (accountName = '', allFields = false) => {
+const getAccountByAccountName = async (
+  accountName: string = '',
+  allFields: boolean = false
+): Promise<Account[] | Pick<Account, 'id' | 'name'>> => {
   if (allFields) {
     return db('account')
       .select()

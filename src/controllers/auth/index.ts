@@ -7,7 +7,7 @@ import { User, Account } from '../../models';
 
 import GoogleApi from '../../util/googleAuth';
 import { sendEmailConfirmationEmail } from '../../util/';
-import { JwtDecodedType } from '../../types';
+import { JwtDecodedType, UserAuth, UserType } from '../../types';
 
 type CreateUserAndAccountType = {
   account_name?: string;
@@ -29,9 +29,9 @@ type CreateUserAndAccountType = {
 export const _createUserAndAccount = async (
   payload: CreateUserAndAccountType | any,
   sendConfirmationEmail = true,
-): Promise<any[]> => {
+): Promise<UserType[]> => {
   try {
-    let user: any[] = [];
+    let user: UserType[] = [];
     const { account_name } = payload;
 
     // hash the provided password
@@ -74,7 +74,7 @@ export const _createUserAndAccount = async (
     });
     return user;
   } catch (e) {
-    console.log(e.stack);
+    console.error(e.stack);
     throw new Error(
       'Database error occured while creating user account. Please try again!',
     );
@@ -86,7 +86,7 @@ export const _createUserAndAccount = async (
  * @param {String} token - invitation token
  * @returns {Array} created user response array
  **/
-const _updateUser = async (payload: CreateUserAndAccountType, token: string): Promise<any[]> => {
+const _updateUser = async (payload: CreateUserAndAccountType, token: string): Promise<UserType[]> => {
   try {
     // verify token is valid
     const decoded = jwt.verify(token, process.env.INVITATION_JWT_SECRET as jwt.Secret);
@@ -94,11 +94,11 @@ const _updateUser = async (payload: CreateUserAndAccountType, token: string): Pr
       throw new Error('invalid token');
     }
 
-    let user: any[] = [];
+    let user: UserType[] = [];
     const { account_name } = payload;
 
     // hash the provided password
-    const hashPassword = await User.hashPassword(payload.password);
+    const hashPassword = await User.hashPassword(payload.password as string);
 
     // create user and account
     await db.transaction(async function (trx) {
@@ -145,12 +145,7 @@ const _updateUser = async (payload: CreateUserAndAccountType, token: string): Pr
  * @param {String} email - user email
  * @returns {Object} token payload
  **/
-const _signAndGetAuthToken = (userObject: { id: string; email: string }): {
-  user_id: string,
-  last_logged_in: string,
-  token: string,
-  is_token_valid: boolean,
-} => {
+const _signAndGetAuthToken = (userObject: { id: string; email: string }): UserAuth => {
   const token = jwt.sign(
     {
       user: {
@@ -189,9 +184,9 @@ const signup = async (req, res) => {
         const { token } = req.query;
         const payload = req.body;
         const { email } = payload;
-        let user: any[] = [];
+        let user: UserType[] = [];
 
-        const userRes = await User.getUserByEmail(email);
+        const userRes: UserType[] = await User.getUserByEmail(email);
 
         if (token) {
           if (userRes.length > 0 && userRes[0].is_active) {

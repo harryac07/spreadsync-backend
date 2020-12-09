@@ -1,6 +1,7 @@
 import supertest from 'supertest';
 import app from '../../server';
 import User from '../../models/users';
+import { UserType } from 'src/types';
 
 
 const request = supertest(app);
@@ -8,7 +9,7 @@ const request = supertest(app);
 jest.mock('../../models/db');
 jest.mock('knex');
 
-const usersMockPayload = [
+const usersMockPayload: UserType[] = [
   {
     id: '4b36afc8-5205-49c1-af16-4dc6f96db982',
     email: 'harryac07@test.com',
@@ -42,7 +43,7 @@ beforeAll(async () => {
       firstname: 'test',
       lastname: 'test',
     },
-  ]);
+  ] as UserType[]);
   jest.spyOn(User, 'isValidPassword').mockResolvedValue(true);
   jest.spyOn(User, 'trackUserAuthToken').mockResolvedValue();
   const response = await request.post('/api/auth/login').send({
@@ -94,12 +95,14 @@ describe('Users Endpoints', () => {
         name: 'Test Account 1',
         created_on: '2020-05-26T21:31:52.905Z',
         user: 'test-user-1234',
+        admin: '123456'
       },
       {
         id: '4b36afc8-5205-49c1-af16-test',
         name: 'Test Account 2',
         created_on: '2020-05-26T21:31:52.905Z',
         user: 'test-user-1234',
+        admin: '123456'
       },
     ]);
     const response = await request

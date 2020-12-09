@@ -20,7 +20,7 @@ class GoogleAuth {
   oAuth2Client: any;
   oauth2: any;
   tokens: null | string;
-  constructor(code) {
+  constructor(code: string) {
     this.code = code;
     this.oAuth2Client = new google.auth.OAuth2(
       googleConfig.clientId,
@@ -31,7 +31,7 @@ class GoogleAuth {
     this.tokens = null;
   }
 
-  getAccessToken() {
+  getAccessToken(): Promise<any> {
     return new Promise((resolve, reject) => {
       this.oAuth2Client.getToken(this.code, (err, tokens) => {
         if (err) {
@@ -45,7 +45,11 @@ class GoogleAuth {
     });
   }
 
-  async getUserDetails() {
+  async getUserDetails(): Promise<{
+    email: string;
+    given_name: string;
+    family_name: string;
+  }> {
     if (!this.tokens) {
       throw new Error('Access token not found!');
     }
@@ -53,10 +57,6 @@ class GoogleAuth {
       auth: this.oAuth2Client,
     });
     return userInfo.data;
-  }
-
-  authorizeSpreadsheet() {
-    // defaultSpreadsheetScope
   }
 }
 export default GoogleAuth;

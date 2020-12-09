@@ -3,7 +3,7 @@ import app from '../../server';
 import Project from '../../models/projects';
 import User from '../../models/users';
 import * as projectCtrl from '../../controllers/projects';
-import { Project as ProjectTypes, ProjectWithRelations } from 'src/types';
+import { Project as ProjectTypes } from 'src/types';
 
 jest.mock('../../util/');
 jest.mock('../../models/db');
