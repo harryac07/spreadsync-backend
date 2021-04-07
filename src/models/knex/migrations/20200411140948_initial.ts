@@ -84,6 +84,8 @@ export const up = async (knex: Knex) => {
       type text, -- export or sync
       project UUID REFERENCES project(id),
       script text,
+      data_source text,
+      data_target text,
       created_by UUID REFERENCES "user"(id),
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP
@@ -96,6 +98,8 @@ export const up = async (knex: Knex) => {
       type text, -- export or sync
       project UUID REFERENCES project(id),
       script text,
+      data_source text,
+      data_target text,
       created_by UUID REFERENCES "user"(id),
       created_on TIMESTAMP
     );
@@ -108,6 +112,27 @@ export const up = async (knex: Knex) => {
       unit text, --minutes, hours, days, months
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS source_database(
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      job UUID REFERENCES job(id),
+      database_type text,
+      is_ssl boolean default false,
+      alias_name text,
+      database_host text,
+      database_name text,
+      database_port text,
+      database_user text,
+      database_password text,      
+      is_ssh boolean default false,
+      ssh_host text,
+      ssh_username text,
+      ssh_password text,
+      ssh_port text,
+      ssh_key text,
+      data_type text, -- source, target
+      created_on TIMESTAMP NOT NULL DEFAULT NOW()    
     );
 
     CREATE TABLE IF NOT EXISTS history.job_schedule_history(

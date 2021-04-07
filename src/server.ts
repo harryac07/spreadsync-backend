@@ -20,19 +20,5 @@ app.use(helmet());
 
 app.use('/api', routes);
 
-/*  future central logging */
-// app.use((err: any, req: Request, res: Response) => {
-//   console.log('here');
-//   if (app.get('env') === 'development') {
-//     console.log(`${req.method} - ${req.status} '${req.url}'`);
-//   }
-//   /* Later this part can be used for central logging */
-//   res.status(err.status || 500).json({
-//     user_id: req.locals ? req.locals.user.id : undefined,
-//     url: req.url,
-//     message: err.message || 'Invalid request',
-//   });
-// });
-
 
 export default app;

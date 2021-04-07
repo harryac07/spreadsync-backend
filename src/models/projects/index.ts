@@ -77,6 +77,7 @@ const getProjectById = (projectId: string): Promise<ProjectWithRelations[]> => {
       id: projectId,
     });
 };
+
 /**
  * getAllJobsByProjectId
  * @param {String}projectId - Lookup projectId
@@ -84,8 +85,10 @@ const getProjectById = (projectId: string): Promise<ProjectWithRelations[]> => {
  */
 const getAllJobsByProjectId = (projectId: string): Promise<JobListWithProject> => {
   return db('job')
-    .select('job.*', 'user.email as user_email', 'user.id as user_id')
+    .select('job.*', 'user.email as user_email', 'user.id as user_id', 'job_schedule.frequency_name', 'job_schedule.unit', 'job_schedule.value')
+    .distinctOn('job.id')
     .leftJoin('user', 'user.id', 'job.created_by')
+    .leftJoin('job_schedule', 'job_schedule.job', 'job.id')
     .where({
       project: projectId,
     });

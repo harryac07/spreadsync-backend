@@ -36,9 +36,53 @@ export interface Job {
   type: string;
   project: string;
   script: string;
+  data_source: string;
+  data_target: string;
   created_by: string;
   created_on: any;
   updated_on: any;
+}
+
+export interface CreateJobPayload {
+  name: string;
+  description: string;
+  type: string;
+  project: string;
+  script?: string;
+  data_source: string;
+  data_target: string;
+  created_by: string;
+}
+
+export interface JobSchedule {
+  id: string;
+  job: string;
+  frequency_name: string;
+  value: string | number;
+  unit: string;
+  created_on: string;
+  updated_on: string;
+}
+
+export interface DataSource {
+  id: string;
+  job: string;
+  database_type: 'postgres' | 'mysql';
+  is_ssl: boolean;
+  alias_name: string;
+  database_host: string;
+  database_name: string;
+  database_port: string;
+  database_user: string;
+  database_password: string;
+  is_ssh: boolean;
+  ssh_host: string;
+  ssh_username: string;
+  ssh_password: string;
+  ssh_port: string;
+  ssh_key: string;
+  data_type: 'source' | 'target';
+  created_on: string;
 }
 
 export interface UserInvolvement {

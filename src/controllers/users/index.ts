@@ -2,6 +2,10 @@ import { User } from '../../models';
 
 const getAllUsers = async (req, res) => {
   try {
+    const { projectId } = req.query;
+    if (projectId) {
+      const users = await User.getAllUsers();
+    }
     const users = await User.getAllUsers();
     res.status(200).json(users);
   } catch (e) {
