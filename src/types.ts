@@ -106,6 +106,8 @@ export interface SocialAuth {
   id?: string;
   user_id: string,
   job_id: string;
+  type: 'target' | 'source';
+  social_name: 'google';
   token_type: string;
   expiry_date: number;
   scope: string;
@@ -114,6 +116,8 @@ export interface SocialAuth {
   id_token: string;
   created_on?: string;
 }
+
+export type CreateSocialAuthPayload = Omit<SocialAuth, 'id' | 'created_on'>;
 
 export type UserInvolvementPayload = {
   user?: string;

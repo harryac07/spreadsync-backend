@@ -7,7 +7,7 @@ import { User, Account, SocialAuth } from '../../models';
 
 import GoogleApi from '../../util/googleAuth';
 import { sendEmailConfirmationEmail } from '../../util/';
-import { JwtDecodedType, UserAuth, UserType, SocialAuth as SocialAuthTypes } from '../../types';
+import { JwtDecodedType, UserAuth, UserType, SocialAuth as SocialAuthTypes, CreateSocialAuthPayload as CreateSocialAuthPayloadTypes } from '../../types';
 
 type CreateUserAndAccountType = {
   account_name?: string;
@@ -19,6 +19,8 @@ type CreateUserAndAccountType = {
   company?: string;
   is_active?: boolean;
 };
+
+type socialTypes = 'google';
 
 /**
  * _createUserAndAccount
@@ -354,7 +356,10 @@ const activateUser = async (req, res) => {
 };
 
 const saveSocialAuth = async (req, res) => {
-  const { authCode, jobId } = req.body;
+  type reqPayloadType = { authCode: string; jobId: string; type: 'source' | 'target' };
+  const { authCode, jobId, type }: reqPayloadType = req.body;
+  const { name }: { name: socialTypes } = req.params;
+
   const { id: userId } = req.locals.user;
   try {
     if (!authCode) {
@@ -368,18 +373,34 @@ const saveSocialAuth = async (req, res) => {
     const googleClient = await GoogleApi.init(authCode);
     const newlyCreatedTokens = await googleClient.getTokens()
 
-    const reqPayload: Omit<SocialAuthTypes, 'id' | 'created_on'> = {
+    const reqPayload: CreateSocialAuthPayloadTypes = {
       ...newlyCreatedTokens,
       job_id: jobId,
-      user_id: userId
+      user_id: userId,
+      social_name: name,
+      type: type
     };
     await SocialAuth.createSocialAuthForJob(reqPayload);
     res.status(200).json({
       message: 'Social auth created successfully!',
     });
-
   } catch (error) {
     console.log(error.stack);
+    res.status(500).json({
+      message: error.message || 'Invalid Request',
+    });
+  }
+}
+
+const getSocialAuthByJobId = async (req, res) => {
+  try {
+    type ParamsTypes = { name: socialTypes; job_id: string };
+    const { name, job_id }: ParamsTypes = req.params;
+
+    const socialAuthForJob = await SocialAuth.getSocialAuthByJobId(job_id);
+    res.status(200).json(socialAuthForJob);
+  } catch (error) {
+    console.error(error.stack)
     res.status(500).json({
       message: error.message || 'Invalid Request',
     });
@@ -392,5 +413,6 @@ export {
   loginAuth,
   activateUser,
 
-  saveSocialAuth
+  saveSocialAuth,
+  getSocialAuthByJobId
 };

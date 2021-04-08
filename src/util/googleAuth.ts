@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { SocialAuth } from '../models';
+import { isEmpty } from 'lodash';
 
 const googleConfig = {
   clientId: process.env.GOOGLE_AUTH_CLIENT_ID,
@@ -61,8 +62,17 @@ class GoogleAuth {
   async refreshTokenFromDB(jobId: string) {
     /* fetch token from db */
     const [socialAuthJob] = await SocialAuth.getSocialAuthByJobId(jobId);
-    const { id, created_on, user_id, job_id, ...payloadData } = socialAuthJob;
-
+    if (isEmpty(socialAuthJob)) {
+      throw new Error('Refresh token is empty! Please re-connect again.')
+    }
+    const payloadData = {
+      token_type: socialAuthJob.token_type,
+      expiry_date: socialAuthJob.expiry_date,
+      scope: socialAuthJob.scope,
+      refresh_token: socialAuthJob.refresh_token,
+      access_token: socialAuthJob.access_token,
+      id_token: socialAuthJob.id_token,
+    };
     this.oAuth2Client.setCredentials(payloadData);
     this.tokens = payloadData;
   }

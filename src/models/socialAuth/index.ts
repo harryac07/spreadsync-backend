@@ -1,7 +1,6 @@
 import db from '../db';
-import { SocialAuth } from 'src/types';
+import { SocialAuth, CreateSocialAuthPayload } from 'src/types';
 
-type CreateSocialAuthPayload = Omit<SocialAuth, 'id' | 'created_on'>;
 
 const getSocialAuthById = async (authId: string): Promise<SocialAuth[]> => {
   return db('social_auth')

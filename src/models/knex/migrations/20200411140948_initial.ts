@@ -35,7 +35,9 @@ export const up = async (knex: Knex) => {
     CREATE TABLE IF NOT EXISTS social_auth(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       user_id UUID REFERENCES "user"(id),
-      job_id UUID REFERENCES job(id),	
+      job_id UUID REFERENCES job(id),
+      type text, --target or source
+      social_name text, --google
       token_type text,
       expiry_date bigint,
       scope text,
@@ -43,7 +45,7 @@ export const up = async (knex: Knex) => {
       access_token text,
       id_token text,
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
-      UNIQUE (job_id)	
+      UNIQUE (job_id, type)
     );
 
     CREATE TABLE IF NOT EXISTS account(
