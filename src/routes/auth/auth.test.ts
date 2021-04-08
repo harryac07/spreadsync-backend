@@ -108,16 +108,14 @@ describe('Auth endpoints', () => {
   it('should signup successfully with google auth', async () => {
     const authCode = 'tester123456789';
     jest.spyOn(authCtrl, '_createUserAndAccount').mockResolvedValue(createUserAndAccountPayload);
-    GoogleApi.prototype.getAccessToken = jest.fn().mockReturnValueOnce(
-      Promise.resolve({
-        token_id: '123455',
-      }),
-    );
-    GoogleApi.prototype.getUserDetails = jest.fn().mockReturnValueOnce(
-      Promise.resolve({
-        email: 'test@example.com',
-      }),
-    );
+    GoogleApi.init = jest.fn().mockReturnValueOnce({
+      getNewToken: jest.fn(),
+      getUserDetails: jest.fn().mockReturnValueOnce(
+        Promise.resolve({
+          email: 'test@example.com',
+        }),
+      )
+    });
     const reqPayload = {
       authCode: authCode,
       auth: 'google',

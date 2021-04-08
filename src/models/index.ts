@@ -3,6 +3,7 @@ import Project from './projects';
 import Account from './accounts';
 import Job from './jobs';
 import UserInvolvement from './userInvolvement';
+import SocialAuth from './socialAuth';
 
 export {
   User,
@@ -10,4 +11,5 @@ export {
   Account,
   UserInvolvement,
   Job,
+  SocialAuth
 };

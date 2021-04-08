@@ -102,6 +102,19 @@ export interface UserAuth {
   is_token_valid: boolean,
 }
 
+export interface SocialAuth {
+  id?: string;
+  user_id: string,
+  job_id: string;
+  token_type: string;
+  expiry_date: number;
+  scope: string;
+  refresh_token: string;
+  access_token: string;
+  id_token: string;
+  created_on?: string;
+}
+
 export type UserInvolvementPayload = {
   user?: string;
   project?: string;

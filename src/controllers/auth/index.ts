@@ -3,11 +3,11 @@ import passport from 'passport';
 import jwt from 'jsonwebtoken';
 
 import db from '../../models/db';
-import { User, Account } from '../../models';
+import { User, Account, SocialAuth } from '../../models';
 
 import GoogleApi from '../../util/googleAuth';
 import { sendEmailConfirmationEmail } from '../../util/';
-import { JwtDecodedType, UserAuth, UserType } from '../../types';
+import { JwtDecodedType, UserAuth, UserType, SocialAuth as SocialAuthTypes } from '../../types';
 
 type CreateUserAndAccountType = {
   account_name?: string;
@@ -279,8 +279,7 @@ const loginAuth = async (req, res) => {
       throw new Error('Authentication not allowed!');
     }
 
-    const googleClient = new GoogleApi(authCode);
-    await googleClient.getAccessToken();
+    const googleClient = await GoogleApi.init(authCode);
     const userDetails = await googleClient.getUserDetails();
 
     const userRes = await User.getUserByEmail(userDetails.email);
@@ -354,9 +353,44 @@ const activateUser = async (req, res) => {
   }
 };
 
+const saveSocialAuth = async (req, res) => {
+  const { authCode, jobId } = req.body;
+  const { id: userId } = req.locals.user;
+  try {
+    if (!authCode) {
+      throw new Error('Authentication not allowed!');
+    }
+    if (!jobId) {
+      throw new Error('Job id is required!');
+    }
+
+    /* Generate token and store to social_auth */
+    const googleClient = await GoogleApi.init(authCode);
+    const newlyCreatedTokens = await googleClient.getTokens()
+
+    const reqPayload: Omit<SocialAuthTypes, 'id' | 'created_on'> = {
+      ...newlyCreatedTokens,
+      job_id: jobId,
+      user_id: userId
+    };
+    await SocialAuth.createSocialAuthForJob(reqPayload);
+    res.status(200).json({
+      message: 'Social auth created successfully!',
+    });
+
+  } catch (error) {
+    console.log(error.stack);
+    res.status(500).json({
+      message: error.message || 'Invalid Request',
+    });
+  }
+}
+
 export {
   signup,
   login,
   loginAuth,
   activateUser,
+
+  saveSocialAuth
 };

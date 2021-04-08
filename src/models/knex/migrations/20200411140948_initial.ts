@@ -32,6 +32,20 @@ export const up = async (knex: Knex) => {
       is_token_valid BOOLEAN DEFAULT FALSE
     );
 
+    CREATE TABLE IF NOT EXISTS social_auth(
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      user_id UUID REFERENCES "user"(id),
+      job_id UUID REFERENCES job(id),	
+      token_type text,
+      expiry_date bigint,
+      scope text,
+      refresh_token text,
+      access_token text,
+      id_token text,
+      created_on TIMESTAMP NOT NULL DEFAULT NOW(),
+      UNIQUE (job_id)	
+    );
+
     CREATE TABLE IF NOT EXISTS account(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       name text UNIQUE,
@@ -233,6 +247,8 @@ export const down = async (knex: Knex) => {
     DROP TABLE IF EXISTS history.job_history cascade;
     DROP TABLE IF EXISTS job_schedule cascade;
     DROP TABLE IF EXISTS history.job_schedule_history cascade;
+    DROP TABLE IF EXISTS source_database cascade;
+    DROP TABLE IF EXISTS social_auth cascade;
     DROP TABLE IF EXISTS payment cascade;
     DROP TABLE IF EXISTS user_role cascade;
     DROP TABLE IF EXISTS user_permission cascade;
