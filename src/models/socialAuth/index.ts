@@ -1,5 +1,5 @@
 import db from '../db';
-import { SocialAuth, CreateSocialAuthPayload } from 'src/types';
+import { SocialAuth, CreateSocialAuthPayload, socialTypes } from 'src/types';
 
 
 const getSocialAuthById = async (authId: string): Promise<SocialAuth[]> => {
@@ -8,10 +8,14 @@ const getSocialAuthById = async (authId: string): Promise<SocialAuth[]> => {
     .where({ id: authId });
 };
 
-const getSocialAuthByJobId = async (jobId: string): Promise<SocialAuth[]> => {
+const getSocialAuthByJobId = async (jobId: string, filterObj: any = {}, fieldsOnlyArray: string[] = []): Promise<SocialAuth[]> => {
+  const filter = { job_id: jobId, ...filterObj };
+  const fieldsToFetch = fieldsOnlyArray?.length
+    ? fieldsOnlyArray
+    : [];
   return db('social_auth')
-    .select()
-    .where({ job_id: jobId });
+    .select(fieldsToFetch)
+    .where(filter);
 };
 
 const createSocialAuthForJob = async (payload: CreateSocialAuthPayload): Promise<SocialAuth[]> => {

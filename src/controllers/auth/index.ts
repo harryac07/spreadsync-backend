@@ -7,7 +7,7 @@ import { User, Account, SocialAuth } from '../../models';
 
 import GoogleApi from '../../util/googleAuth';
 import { sendEmailConfirmationEmail } from '../../util/';
-import { JwtDecodedType, UserAuth, UserType, SocialAuth as SocialAuthTypes, CreateSocialAuthPayload as CreateSocialAuthPayloadTypes } from '../../types';
+import { JwtDecodedType, UserAuth, UserType, SocialAuth as SocialAuthTypes, CreateSocialAuthPayload as CreateSocialAuthPayloadTypes, socialTypes } from '../../types';
 
 type CreateUserAndAccountType = {
   account_name?: string;
@@ -19,8 +19,6 @@ type CreateUserAndAccountType = {
   company?: string;
   is_active?: boolean;
 };
-
-type socialTypes = 'google';
 
 /**
  * _createUserAndAccount
@@ -396,8 +394,11 @@ const getSocialAuthByJobId = async (req, res) => {
   try {
     type ParamsTypes = { name: socialTypes; job_id: string };
     const { name, job_id }: ParamsTypes = req.params;
-
-    const socialAuthForJob = await SocialAuth.getSocialAuthByJobId(job_id);
+    const filter = {
+      social_name: name,
+    }
+    const fieldsOnly: string[] = ['id', 'user_id', 'type', 'social_name'];
+    const socialAuthForJob = await SocialAuth.getSocialAuthByJobId(job_id, filter, fieldsOnly);
     res.status(200).json(socialAuthForJob);
   } catch (error) {
     console.error(error.stack)

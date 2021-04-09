@@ -118,6 +118,7 @@ export interface SocialAuth {
 }
 
 export type CreateSocialAuthPayload = Omit<SocialAuth, 'id' | 'created_on'>;
+export type socialTypes = 'google';
 
 export type UserInvolvementPayload = {
   user?: string;
