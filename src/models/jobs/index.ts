@@ -1,5 +1,5 @@
 import db from '../db';
-import { Job, CreateJobPayload, JobSchedule, DataSource as DataSourceTypes } from 'src/types';
+import { Job, CreateJobPayload, JobSchedule, DataSource as DataSourceTypes, SpreadsheetConfig } from 'src/types';
 
 type JobScheduleReqPayloadProps = Omit<JobSchedule, 'id' | 'created_on' | 'updated_on'>
 
@@ -71,5 +71,26 @@ const updateJobDataSource = async (dataSourceId: string, reqPayload: Omit<DataSo
     .where({ id: dataSourceId }).returning('*');
 }
 
+const createSpreadSheetConfigForJob = async (reqPayload: SpreadsheetConfig): Promise<SpreadsheetConfig[]> => {
+  return db('spreadsheet_config').insert(reqPayload).returning('*');
+};
 
-export default { getAllJobs, createJob, updateJobDetail, getJobById, getJobByProjectId, createJobSchedule, updateJobSchedule, createJobDataSource, getJobDataSource, updateJobDataSource }
+const updateSpreadSheetConfigForJob = async (configId: string, reqPayload: any): Promise<SpreadsheetConfig[]> => {
+  return db('spreadsheet_config').update(reqPayload).where({ id: configId }).returning('*');
+};
+
+const getSpreadSheetConfigForJob = async (jobId: string, filterObj: { type?: 'source' | 'target' }): Promise<SpreadsheetConfig[]> => {
+  if (!jobId) {
+    throw new Error('Job id must be defined');
+  }
+  const filter = {
+    job_id: jobId,
+    ...filterObj
+  }
+  return db('spreadsheet_config')
+    .select()
+    .where(filter);
+};
+
+
+export default { getAllJobs, createJob, updateJobDetail, getJobById, getJobByProjectId, createJobSchedule, updateJobSchedule, createJobDataSource, getJobDataSource, updateJobDataSource, createSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, getSpreadSheetConfigForJob }

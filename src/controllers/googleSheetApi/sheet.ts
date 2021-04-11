@@ -34,12 +34,11 @@ class SpreadSheet {
       });
     })
   }
-  async getSpreadSheet(spreadSheetId, ranges = "A1:B1") {
+  async getSpreadSheet(spreadSheetId, range = "A1") {
     const request = {
       spreadsheetId: spreadSheetId,
-      includeGridData: true,
+      // includeGridData: true,
       auth: this.authClient,
-      ranges: ranges,
     };
     const response = (await this.sheet.spreadsheets.get(request)).data;
     return response;

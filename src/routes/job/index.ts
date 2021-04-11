@@ -10,6 +10,10 @@ router.get('/:id', checkAuth, jobController.getJobById);
 router.patch('/:id', checkAuth, jobController.updateJob);
 router.get('/:id/datasource', checkAuth, jobController.getJobDataSource);
 router.post('/:id/datasource', checkAuth, jobController.createDataSource);
+router.post('/:id/datasource', checkAuth, jobController.createDataSource);
+router.post('/:id/sheets/config', checkAuth, jobController.createSpreadSheetConfigForJob);
+router.get('/:id/sheets/config', checkAuth, jobController.getSpreadSheetConfigForJob);
+router.patch('/:id/sheets/config/:config_id', checkAuth, jobController.updateSpreadSheetConfigForJob);
 router.patch('/:id/datasource/:data_source_id', checkAuth, jobController.updateDataSource);
 export {
   router

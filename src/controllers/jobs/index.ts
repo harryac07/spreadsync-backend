@@ -222,4 +222,89 @@ const getJobDataSource = async (req, res) => {
   }
 }
 
-export { getJobById, getJobByProjectId, createJob, updateJob, createDataSource, getJobDataSource, updateDataSource }
+const createSpreadSheetConfigForJob = async (req, res) => {
+  try {
+    type reqPayloadTypes = {
+      include_column_header: boolean;
+      enrich_type: 'append' | 'replace';
+      range: string;
+      sheet: string;
+      spreadsheet_id: string;
+      type: 'source' | 'target';
+    }
+    const { id: userId } = req.locals?.user;
+    const { id: jobId } = req.params;
+    const reqPayload: reqPayloadTypes = req.body;
+
+    if (!userId) {
+      throw new Error('User must be logged in!');
+    }
+
+    const spreadsheetConfig = await Job.createSpreadSheetConfigForJob({
+      ...reqPayload,
+      user_id: userId,
+      job_id: jobId,
+    });
+    res.status(200).json(spreadsheetConfig);
+  } catch (e) {
+    console.error(e.stack);
+    res.status(500).json({
+      message: e.message || 'Invalid Request',
+    });
+  }
+}
+
+const getSpreadSheetConfigForJob = async (req, res) => {
+  try {
+    const { id: userId } = req.locals?.user;
+    const { id: jobId } = req.params;
+    const { type: requestType }: { type: 'source' | 'target' | 'undefined' } = req.query;
+
+    if (!userId) {
+      throw new Error('User must be logged in!');
+    }
+    console.log('requestType ', requestType ? requestType : 'oh no')
+
+    const spreadsheetConfig = await Job.getSpreadSheetConfigForJob(
+      jobId,
+      requestType && requestType !== 'undefined' ? { type: requestType } : {}
+    );
+    res.status(200).json(spreadsheetConfig);
+  } catch (e) {
+    console.error(e.stack);
+    res.status(500).json({
+      message: e.message || 'Invalid Request',
+    });
+  }
+}
+
+const updateSpreadSheetConfigForJob = async (req, res) => {
+  try {
+    type reqPayloadTypes = {
+      include_column_header?: boolean;
+      enrich_type?: 'append' | 'replace';
+      range?: string;
+      sheet?: string;
+      spreadsheet_id?: string;
+      type?: 'source' | 'target';
+    }
+    const { id: userId } = req.locals?.user;
+    const { id: jobId, config_id: configId
+    } = req.params;
+    const reqPayload: reqPayloadTypes = req.body;
+
+    if (!userId) {
+      throw new Error('User must be logged in!');
+    }
+
+    const spreadsheetConfig = await Job.updateSpreadSheetConfigForJob(configId, reqPayload);
+    res.status(200).json(spreadsheetConfig);
+  } catch (e) {
+    console.error(e.stack);
+    res.status(500).json({
+      message: e.message || 'Invalid Request',
+    });
+  }
+}
+
+export { getJobById, getJobByProjectId, createJob, updateJob, createDataSource, getJobDataSource, updateDataSource, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob }

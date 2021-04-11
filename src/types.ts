@@ -1,3 +1,5 @@
+import { type } from "os";
+
 export interface UserType {
   email: string;
   password?: string;
@@ -114,6 +116,19 @@ export interface SocialAuth {
   refresh_token: string;
   access_token: string;
   id_token: string;
+  created_on?: string;
+}
+
+export type SpreadsheetConfig = {
+  id?: string;
+  user_id: string;
+  job_id: string;
+  spreadsheet_id: string;
+  sheet: string;
+  include_column_header: boolean;
+  enrich_type: 'append' | 'replace';
+  range: string;
+  type: 'source' | 'target'
   created_on?: string;
 }
 
