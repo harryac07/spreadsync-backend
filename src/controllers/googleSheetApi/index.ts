@@ -3,6 +3,31 @@ import GoogleSheet from './sheet';
 
 type DataJobType = 'source' | 'target';
 
+const createNewSpreadSheet = async (req, res) => {
+  try {
+    const { id: userId } = req.locals?.user ?? {};
+    const { job_id: jobId } = req.params;
+    if (!userId) {
+      throw new Error('User not authenticated!');
+    }
+    const { spreadsheet_name = '' } = req.body;
+    if (!spreadsheet_name) {
+      throw new Error('Spreadsheet name is required!');
+    }
+    const googleClient = await GoogleApi.initForJob(jobId);
+    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+    const spreadsheetId: string = await sheetApi.createSpreadsheet(spreadsheet_name);
+    res.status(200).json({
+      spreadsheet_id: spreadsheetId
+    });
+  } catch (error) {
+    console.error(error.stack);
+    res.status(500).json({
+      message: error.message || 'Invalid Request',
+    });
+  }
+}
+
 const listAllGoogleSheetsForJob = async (req, res) => {
   try {
     const { id: userId } = req.locals?.user ?? {};
@@ -44,6 +69,7 @@ const getSpreadSheet = async (req, res) => {
 }
 
 export {
+  createNewSpreadSheet,
   listAllGoogleSheetsForJob,
   getSpreadSheet
 }
