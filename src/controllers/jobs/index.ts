@@ -1,3 +1,4 @@
+import knex from 'knex';
 import dbClient from '../../models/db';
 import { Job } from '../../models';
 import { Job as JobTypes, CreateJobPayload, DataSource, JobSchedule } from 'src/types';
@@ -246,6 +247,40 @@ const getJobDataSource = async (req, res) => {
   }
 }
 
+const checkDatabaseConnectionByJobId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      throw new Error('Job id is required!');
+    }
+    const [jobDataSource]: DataSource[] = await Job.getJobDataSource(id);
+    /* Connect to db */
+    let dbInstance;
+    try {
+      dbInstance = await knex({
+        client: jobDataSource?.database_type?.toLowerCase(),
+        connection: {
+          host: jobDataSource?.database_host,
+          user: jobDataSource?.database_user,
+          password: jobDataSource?.database_password,
+          database: jobDataSource?.database_name
+        }
+      });
+      await dbInstance.raw(`SELECT 1`);
+      res.status(200).json({ data: 'connected successfully!' });
+    } finally {
+      if (dbInstance) {
+        await dbInstance.destroy();
+      }
+    }
+  } catch (e) {
+    console.error(e.stack);
+    res.status(500).json({
+      message: e.message || 'Invalid Request',
+    });
+  }
+}
+
 const createSpreadSheetConfigForJob = async (req, res) => {
   try {
     type reqPayloadTypes = {
@@ -331,4 +366,4 @@ const updateSpreadSheetConfigForJob = async (req, res) => {
   }
 }
 
-export { getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, updateDataSource, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob }
+export { getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, updateDataSource, checkDatabaseConnectionByJobId, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob }

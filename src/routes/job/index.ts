@@ -11,11 +11,11 @@ router.patch('/:id', checkAuth, jobController.updateJob);
 router.delete('/:id', checkAuth, jobController.deleteJobById);
 router.get('/:id/datasource', checkAuth, jobController.getJobDataSource);
 router.post('/:id/datasource', checkAuth, jobController.createDataSource);
-router.post('/:id/datasource', checkAuth, jobController.createDataSource);
 router.post('/:id/sheets/config', checkAuth, jobController.createSpreadSheetConfigForJob);
 router.get('/:id/sheets/config', checkAuth, jobController.getSpreadSheetConfigForJob);
 router.patch('/:id/sheets/config/:config_id', checkAuth, jobController.updateSpreadSheetConfigForJob);
 router.patch('/:id/datasource/:data_source_id', checkAuth, jobController.updateDataSource);
+router.post('/:id/datasource/:data_source_id/connection-check', checkAuth, jobController.checkDatabaseConnectionByJobId);
 export {
   router
 };
