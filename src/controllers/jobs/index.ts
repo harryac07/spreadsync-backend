@@ -86,6 +86,30 @@ const getJobById = async (req, res) => {
   }
 };
 
+const deleteJobById = async (req, res) => {
+  try {
+    const { id: jobId } = req.params;
+
+    const [job] = await Job.getJobById(jobId);
+    if (!job) {
+      throw new Error('Job does not exist!')
+    }
+    await Job.deleteJobWithAllRelations(jobId);
+
+    /*
+     * Feature addition in future
+     * Send email notification to all members of the job
+     */
+
+    res.status(200).json([]);
+  } catch (e) {
+    console.error(e.stack);
+    res.status(500).json({
+      message: e.message || 'Invalid Request',
+    });
+  }
+};
+
 const updateJob = async (req, res) => {
   try {
     const { id } = req.params;
@@ -307,4 +331,4 @@ const updateSpreadSheetConfigForJob = async (req, res) => {
   }
 }
 
-export { getJobById, getJobByProjectId, createJob, updateJob, createDataSource, getJobDataSource, updateDataSource, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob }
+export { getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, updateDataSource, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob }

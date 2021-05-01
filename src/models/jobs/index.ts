@@ -34,6 +34,21 @@ const getJobById = async (id: string): Promise<Job[]> => {
     .where('job.id', '=', id);
 };
 
+const deleteJobWithAllRelations = async (jobId: string): Promise<any> => {
+  if (!jobId) {
+    throw new Error('Job id is required to delete a job');
+  }
+  await db.transaction(async (trx) => {
+    await trx('history.job_history').where('job', jobId).del();
+    await trx('history.job_schedule_history').where('job', jobId).del();
+    await trx('job_schedule').where('job', jobId).del();
+    await trx('source_database').where('job', jobId).del();
+    await trx('spreadsheet_config').where('job_id', jobId).del();
+    await trx('social_auth').where('job_id', jobId).del();
+    await trx('job').where('id', jobId).del();
+  });
+};
+
 const getJobByProjectId = async (projectId: string): Promise<Job[]> => {
   return db('job')
     .select('job.*', 'user.email as user_email', 'user.id as user_id', 'job_schedule.frequency_name', 'job_schedule.unit', 'job_schedule.value')
@@ -93,4 +108,4 @@ const getSpreadSheetConfigForJob = async (jobId: string, filterObj: { type?: 'so
 };
 
 
-export default { getAllJobs, createJob, updateJobDetail, getJobById, getJobByProjectId, createJobSchedule, updateJobSchedule, createJobDataSource, getJobDataSource, updateJobDataSource, createSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, getSpreadSheetConfigForJob }
+export default { getAllJobs, createJob, updateJobDetail, getJobById, deleteJobWithAllRelations, getJobByProjectId, createJobSchedule, updateJobSchedule, createJobDataSource, getJobDataSource, updateJobDataSource, createSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, getSpreadSheetConfigForJob }
