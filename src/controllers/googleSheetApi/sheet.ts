@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import GoogleApi from '../../util/googleAuth';
+import { Job } from '../../models';
 
 const SCOPES = [
   "https://www.googleapis.com/auth/spreadsheets",
@@ -193,79 +194,59 @@ class SpreadSheet {
     }
   }
 
-  //   async appendDataToSheet(sheetId, data) {
-  //     return new Promise((resolve, reject) => {
-  //       this.sheet.spreadsheets.values.append(
-  //         {
-  //           spreadsheetId: sheetId,
-  //           range: "Sheet1",
-  //           valueInputOption: "RAW",
-  //           resource: {
-  //             values: data,
-  //           },
-  //           auth: this.jwtClient,
-  //         },
-  //         (err, result) => {
-  //           if (err) {
-  //             console.log(err);
-  //             reject(err);
-  //           } else {
-  //             resolve(result);
-  //           }
-  //         }
-  //       );
-  //     });
-  //   }
+  async appendDataToSheet(spreadsheetId, sheetRange, data) {
+    return new Promise((resolve, reject) => {
+      this.sheet.spreadsheets.values.append(
+        {
+          spreadsheetId: spreadsheetId,
+          range: sheetRange,
+          valueInputOption: "RAW",
+          resource: {
+            values: data,
+          },
+          auth: this.authClient,
+        },
+        (err, result) => {
+          if (err) {
+            console.log(err);
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+  }
 
-  //   async clearRowsInSheet(sheetId, deleteHeading = false, headingCount = 0) {
-  //     const sheetData = await this.getSpreadSheet(sheetId);
-  //     const sheets = sheetData.sheets;
-  //     const requestPayload = [];
-  //     for (let sheet of sheets) {
-  //       requestPayload.push(
-  //         {
-  //           deleteRange: {
-  //             range: {
-  //               sheetId: sheet.properties.sheetId, // gid
-  //               startRowIndex: deleteHeading ? 0 : 1,
-  //             },
-  //             shiftDimension: "ROWS",
-  //           },
-  //         },
-  //         {
-  //           deleteDimension: {
-  //             range: {
-  //               sheetId: sheet.properties.sheetId,
-  //               dimension: "COLUMNS",
-  //               startIndex: headingCount - 1,
-  //             },
-  //           },
-  //         }
-  //       );
-  //     }
-  //     if (requestPayload.length === 0) {
-  //       throw new Error("No sheet grid id to clear sheet");
-  //     }
-  //     return new Promise((resolve, reject) => {
-  //       this.sheet.spreadsheets.batchUpdate(
-  //         {
-  //           auth: this.jwtClient,
-  //           spreadsheetId: sheetId,
-  //           resource: {
-  //             requests: requestPayload,
-  //           },
-  //         },
-  //         (err, res) => {
-  //           if (err) {
-  //             console.log(err.stack);
-  //             reject(err);
-  //           } else {
-  //             resolve(res);
-  //           }
-  //         }
-  //       );
-  //     });
-  //   }
+  async clearRowsInSheet(spreadSheetId, sheetId, deleteHeading = true, headingCount = 0) {
+    return new Promise((resolve, reject) => {
+      this.sheet.spreadsheets.batchUpdate(
+        {
+          auth: this.authClient,
+          spreadsheetId: spreadSheetId,
+          resource: {
+            requests: [{
+              deleteRange: {
+                range: {
+                  sheetId: sheetId,
+                  startRowIndex: deleteHeading ? 0 : 1,
+                },
+                shiftDimension: "ROWS",
+              },
+            }],
+          },
+        },
+        (err, res) => {
+          if (err) {
+            console.log(err.stack);
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        }
+      );
+    });
+  }
   async addColumnsInSheet(sheetId, columnNumber = 26) {
     const reqPayload = {
       requests: [

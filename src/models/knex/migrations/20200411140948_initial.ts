@@ -166,6 +166,7 @@ export const up = async (knex: Knex) => {
       job_id UUID REFERENCES job(id),
       spreadsheet_id text,
       sheet text,
+      sheet_name text,
       include_column_header boolean,
       enrich_type text, --append or replace
       range text,

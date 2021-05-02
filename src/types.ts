@@ -125,6 +125,7 @@ export type SpreadsheetConfig = {
   job_id: string;
   spreadsheet_id: string;
   sheet: string;
+  sheet_name?: string;
   include_column_header: boolean;
   enrich_type: 'append' | 'replace';
   range: string;
