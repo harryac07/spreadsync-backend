@@ -5,6 +5,7 @@ import ClientDBSource from './databaseInstance';
 import GoogleApi from '../../util/googleAuth';
 import GoogleSheet from '../googleSheetApi/sheet';
 import { getFormattedDataWithHeader, getFormattedDataBody } from '../utils';
+import ExportJob from './exportJob';
 import { Job as JobTypes, CreateJobPayload, DataSource, JobSchedule } from 'src/types';
 
 const createJob = async (req, res) => {
@@ -389,45 +390,9 @@ const exportJobFromDatabaseToSpreadsheet = async (req, res) => {
       throw new Error('User must be logged in!');
     }
 
-    const db = await ClientDBSource.init(jobId);
-    const googleClient = await GoogleApi.initForJob(jobId);
-    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+    const exportJob = new ExportJob(jobId);
+    await exportJob.handleExport();
 
-    const [sheetData] = await Job.getSpreadSheetConfigForJob(jobId, { type });
-    const [job] = await Job.getJobById(jobId);
-
-    const spreadsheetId = sheetData?.spreadsheet_id;
-    const sheetId = sheetData?.sheet;
-    const isIncludeHeader = sheetData?.include_column_header ?? false;
-    const appendDataRange = `${sheetData?.sheet_name}!${sheetData?.range}`;
-
-    const dbResponse = await db.raw(`${job?.script}`);
-    const dataRows = dbResponse?.rows;
-    if (!dataRows?.length) {
-      throw new Error('No data to export!');
-    }
-
-    if (sheetData?.enrich_type === 'replace') {
-      // Clear sheet completely if enrich_type is replace
-      await sheetApi.clearRowsInSheet(
-        spreadsheetId,
-        sheetId,
-        true
-      );
-    }
-
-    let formattedDataToAppend: any[] = [];
-    if (isIncludeHeader) {
-      // include header
-      formattedDataToAppend = getFormattedDataWithHeader(dataRows);
-    } else {
-      formattedDataToAppend = getFormattedDataBody(dataRows);
-    }
-
-    console.log('formattedDataToAppend ', formattedDataToAppend);
-
-    /* Append or replace data to spreadsheet */
-    await sheetApi.appendDataToSheet(spreadsheetId, appendDataRange, formattedDataToAppend);
     res.status(200).json({ data: 'Data exported to sheet successfully!' });
   } catch (e) {
     console.error(e.message);
