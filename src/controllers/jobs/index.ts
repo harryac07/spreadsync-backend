@@ -119,6 +119,8 @@ const updateJob = async (req, res) => {
   try {
     const { id } = req.params;
     const reqPayload = req.body;
+    const dataSourceCompletedState = reqPayload?.is_data_source_configured ? { is_data_source_configured: true } : {}
+    const dataTargetCompletedState = reqPayload?.is_data_target_configured ? { is_data_target_configured: true } : {}
 
     if (!id) {
       throw new Error('Job id is required!');
@@ -139,6 +141,8 @@ const updateJob = async (req, res) => {
       script: reqPayload.script || '',
       data_source: reqPayload.data_source || '',
       data_target: reqPayload.data_target || '',
+      ...dataSourceCompletedState,
+      ...dataTargetCompletedState
     }
     const job: JobTypes[] = await Job.updateJobDetail(id, updateJobPayload);
     res.status(200).json(job);
@@ -308,6 +312,12 @@ const createSpreadSheetConfigForJob = async (req, res) => {
       user_id: userId,
       job_id: jobId,
     });
+
+    /* Update job */
+    await Job.updateJobDetail(jobId, {
+      is_data_source_configured: reqPayload.type === 'source',
+      is_data_target_configured: reqPayload.type === 'target',
+    });
     res.status(200).json(spreadsheetConfig);
   } catch (e) {
     console.error(e.stack);
@@ -413,6 +423,8 @@ const exportJobFromDatabaseToSpreadsheet = async (req, res) => {
     } else {
       formattedDataToAppend = getFormattedDataBody(dataRows);
     }
+
+    console.log('formattedDataToAppend ', formattedDataToAppend);
 
     /* Append or replace data to spreadsheet */
     await sheetApi.appendDataToSheet(spreadsheetId, appendDataRange, formattedDataToAppend);

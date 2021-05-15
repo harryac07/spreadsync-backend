@@ -40,6 +40,8 @@ export interface Job {
   script: string;
   data_source: string;
   data_target: string;
+  is_data_target_configured?: boolean;
+  is_data_source_configured?: boolean;
   created_by: string;
   created_on: any;
   updated_on: any;
@@ -53,6 +55,8 @@ export interface CreateJobPayload {
   script?: string;
   data_source: string;
   data_target: string;
+  is_data_target_configured?: boolean;
+  is_data_source_configured?: boolean;
   created_by: string;
 }
 

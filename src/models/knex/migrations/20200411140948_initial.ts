@@ -86,6 +86,8 @@ export const up = async (knex: Knex) => {
       script text,
       data_source text,
       data_target text,
+      is_data_source_configured boolean DEFAULT false,
+      is_data_target_configured boolean DEFAULT false,
       created_by UUID REFERENCES "user"(id),
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP
@@ -100,6 +102,8 @@ export const up = async (knex: Knex) => {
       script text,
       data_source text,
       data_target text,
+      is_data_source_configured boolean DEFAULT false,
+      is_data_target_configured boolean DEFAULT false,
       created_by UUID REFERENCES "user"(id),
       created_on TIMESTAMP
     );
