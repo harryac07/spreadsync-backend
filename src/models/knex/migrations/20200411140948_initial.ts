@@ -83,7 +83,6 @@ export const up = async (knex: Knex) => {
       description text,
       type text, -- export or sync
       project UUID REFERENCES project(id),
-      script text,
       data_source text,
       data_target text,
       is_data_source_configured boolean DEFAULT false,
@@ -99,7 +98,6 @@ export const up = async (knex: Knex) => {
       description text,
       type text, -- export or sync
       project UUID REFERENCES project(id),
-      script text,
       data_source text,
       data_target text,
       is_data_source_configured boolean DEFAULT false,
@@ -136,6 +134,9 @@ export const up = async (knex: Knex) => {
       ssh_port text,
       ssh_key text,
       data_type text, -- source, target
+      script text,
+      tablename text,
+      enrich_type text, -- append, replace
       created_on TIMESTAMP NOT NULL DEFAULT NOW()    
     );
 

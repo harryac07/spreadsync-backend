@@ -37,7 +37,6 @@ const trigger_insert_into_job_history = `
       description,
       type,
       project,
-      script,
       created_by,
       created_on
     )
@@ -47,7 +46,6 @@ const trigger_insert_into_job_history = `
       new.description,
       new.type,
       new.project,
-      new.script,
       new.created_by,
       now()
     )

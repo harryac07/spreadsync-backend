@@ -4,8 +4,10 @@ import { Job } from '../../models';
 class DatabaseSource {
   db: any;
   jobId: string;
+  dbConfig: any;
   constructor(jobId: string) {
     this.db = null;
+    this.dbConfig = null;
     this.jobId = jobId;
   }
   /**
@@ -16,7 +18,10 @@ class DatabaseSource {
     return (async function () {
       let dbSource = new DatabaseSource(jobId)
       await dbSource.initialiseDatabase();
-      return dbSource.db;
+      return {
+        db: dbSource.db,
+        config: dbSource.dbConfig
+      };
     }())
   }
 
@@ -34,6 +39,7 @@ class DatabaseSource {
         database: dataSource?.database_name
       }
     });
+    this.dbConfig = dataSource;
   }
 }
 

@@ -76,6 +76,14 @@ const getJobDataSource = async (jobId: string): Promise<DataSourceTypes[]> => {
   }
 };
 
+const getDataSourceById = async (dataSourceId: string): Promise<DataSourceTypes[]> => {
+  return db('source_database')
+    .select()
+    .where({
+      id: dataSourceId,
+    });
+};
+
 const createJobDataSource = async (reqPayload: Omit<DataSourceTypes, 'created_on' | 'id'>): Promise<DataSourceTypes[]> => {
   return db('source_database').insert(reqPayload).returning('*');
 }
@@ -108,4 +116,4 @@ const getSpreadSheetConfigForJob = async (jobId: string, filterObj: { type?: 'so
 };
 
 
-export default { getAllJobs, createJob, updateJobDetail, getJobById, deleteJobWithAllRelations, getJobByProjectId, createJobSchedule, updateJobSchedule, createJobDataSource, getJobDataSource, updateJobDataSource, createSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, getSpreadSheetConfigForJob }
+export default { getAllJobs, createJob, updateJobDetail, getJobById, deleteJobWithAllRelations, getJobByProjectId, createJobSchedule, updateJobSchedule, createJobDataSource, getJobDataSource, getDataSourceById, updateJobDataSource, createSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, getSpreadSheetConfigForJob }

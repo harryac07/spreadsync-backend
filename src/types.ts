@@ -37,7 +37,6 @@ export interface Job {
   description: string;
   type: string;
   project: string;
-  script: string;
   data_source: string;
   data_target: string;
   is_data_target_configured?: boolean;
@@ -52,7 +51,6 @@ export interface CreateJobPayload {
   description: string;
   type: string;
   project: string;
-  script?: string;
   data_source: string;
   data_target: string;
   is_data_target_configured?: boolean;
@@ -88,6 +86,9 @@ export interface DataSource {
   ssh_port: string;
   ssh_key: string;
   data_type: 'source' | 'target';
+  script?: string;
+  tablename?: string;
+  enrich_type?: 'append' | 'replace';
   created_on: string;
 }
 

@@ -1,3 +1,4 @@
+import { zipObject } from 'lodash';
 import ClientDBSource from './databaseInstance';
 import GoogleApi from '../../util/googleAuth';
 import GoogleSheet from '../googleSheetApi/sheet';
@@ -15,15 +16,18 @@ class ExportJob {
     return sheetData;
   }
 
-  // async getDataFromSheet() {
-  //   const googleClient = await GoogleApi.initForJob(this.jobId);
-  //   const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+  async getDataFromSheet(type): Promise<any[]> {
+    const googleClient = await GoogleApi.initForJob(this.jobId);
+    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
 
-  //   const [sheetData] = await Job.getSpreadSheetConfigForJob(this.jobId, { type });
-  // }
+    const config = await this.getSpreadSheetConfigForJob(type);
+    const sheetRange = `${config?.sheet_name}`;
+    const sheetRowsResponse = await sheetApi.getValuesFromSheet(config.spreadsheet_id, sheetRange) as any;
+    return sheetRowsResponse;
+  }
 
   // async getDataFromDatabase() {
-  //   const db = await ClientDBSource.init(this.jobId);
+  //   const { db } = await ClientDBSource.init(this.jobId);
 
   // }
 
@@ -45,20 +49,44 @@ class ExportJob {
 
     /* Spreadsheet to others */
     if (source === 'spreadsheet' && target === 'database') {
-      console.log('yet to build')
+      await this._exportFromSpreadSheetToDatabase();
       return;
     }
 
   }
 
+  async _exportFromSpreadSheetToDatabase() {
+    /* Check if target db table is configured */
+    const { db, config } = await ClientDBSource.init(this.jobId);
+    const tableName = config.tablename;
+    if (!tableName) {
+      throw new Error('Table name is not set!');
+    }
+    /* Get rows from sheet */
+    const sheetData: any[] = await this.getDataFromSheet('source');
+
+    /* Format sheetData */
+    /* For now assume sheet has header */
+    const [header, ...sheetRows] = sheetData;
+    const formattedRows = sheetRows.map(each => {
+      return zipObject(header, each);
+    });
+
+    /* insert data into table */
+    await db.transaction(async (trx) => {
+      if (config.enrich_type === 'replace') {
+        await trx(tableName).del();
+      }
+      await trx(tableName).insert(formattedRows);
+    });
+    console.log(`Data ${config.enrich_type === 'replace' ? 'replaced' : 'appended'} with ${formattedRows.length} records to table ${tableName}`);
+  }
+
   async _exportFromDBToSpreadSheet() {
 
-    /* Get job */
-    const job = await this.getJobById();
-
     /* Run script to get data from DB */
-    const db = await ClientDBSource.init(this.jobId);
-    const dbResponse = await db.raw(`${job?.script}`);
+    const { db, config } = await ClientDBSource.init(this.jobId);
+    const dbResponse = await db.raw(`${config.script}`);
     const dataRows = dbResponse?.rows;
     if (!dataRows?.length) {
       throw new Error('No data to export!');

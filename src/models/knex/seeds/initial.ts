@@ -125,7 +125,6 @@ exports.seed = async (knex: knex) => {
         description: 'Export Test',
         type: 'Export',
         project: '4b36afc8-5205-49c1-af26-4dc6f26db982',
-        script: 'Select * FROM project...',
         created_by: '4b36afc8-5205-49c1-af16-4dc6f96db982',
       },
     ]);

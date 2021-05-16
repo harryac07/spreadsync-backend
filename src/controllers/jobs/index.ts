@@ -32,7 +32,6 @@ const createJob = async (req, res) => {
       description: reqPayload.description,
       type: reqPayload.type,
       project: reqPayload.project,
-      script: reqPayload.script || '',
       data_source: reqPayload.data_source || '',
       data_target: reqPayload.data_target || '',
       created_by: req.locals.user.id,
@@ -139,7 +138,6 @@ const updateJob = async (req, res) => {
       description: reqPayload.description,
       type: reqPayload.type,
       project: reqPayload.project,
-      script: reqPayload.script || '',
       data_source: reqPayload.data_source || '',
       data_target: reqPayload.data_target || '',
       ...dataSourceCompletedState,
@@ -229,6 +227,9 @@ const updateDataSource = async (req, res) => {
       ssh_port: isSSH ? reqPayload.ssh_port : '',
       ssh_key: isSSH ? reqPayload.ssh_key : '',
       data_type: reqPayload.data_type || 'source',
+      script: reqPayload?.script ?? '',
+      tablename: reqPayload?.tablename ?? '',
+      enrich_type: reqPayload?.enrich_type ?? ''
     }
     const dataSource: DataSource[] = await Job.updateJobDataSource(dataSourceId, dataSourcePayload);
     res.status(200).json(dataSource);
@@ -290,6 +291,47 @@ const checkDatabaseConnectionByJobId = async (req, res) => {
   }
 }
 
+const listAllDatabaseTable = async (req, res) => {
+  try {
+    const { data_source_id } = req.params;
+    if (!data_source_id) {
+      throw new Error('Data source id is required!');
+    }
+    const [jobDataSource]: DataSource[] = await Job.getDataSourceById(data_source_id);
+    /* Connect to db */
+    let dbInstance;
+    let databaseTable: any = [];
+    try {
+      dbInstance = await knex({
+        client: jobDataSource?.database_type?.toLowerCase(),
+        connection: {
+          host: jobDataSource?.database_host,
+          user: jobDataSource?.database_user,
+          password: jobDataSource?.database_password,
+          database: jobDataSource?.database_name
+        }
+      });
+      databaseTable = await dbInstance.raw(`
+        SELECT
+          table_schema||'.'||table_name AS tablename
+        FROM information_schema.tables
+        WHERE table_type ='BASE TABLE'
+          AND table_schema not in ('pg_catalog', 'information_schema')
+        ORDER BY table_schema;
+      `);
+    } finally {
+      if (dbInstance) {
+        await dbInstance.destroy();
+      }
+    }
+    res.status(200).json(databaseTable?.rows ?? []);
+  } catch (e) {
+    console.error(e.stack);
+    res.status(500).json({
+      message: e.message || 'Invalid Request',
+    });
+  }
+}
 const createSpreadSheetConfigForJob = async (req, res) => {
   try {
     type reqPayloadTypes = {
@@ -337,7 +379,6 @@ const getSpreadSheetConfigForJob = async (req, res) => {
     if (!userId) {
       throw new Error('User must be logged in!');
     }
-    console.log('requestType ', requestType ? requestType : 'oh no')
 
     const spreadsheetConfig = await Job.getSpreadSheetConfigForJob(
       jobId,
@@ -402,4 +443,4 @@ const exportJobFromDatabaseToSpreadsheet = async (req, res) => {
   }
 }
 
-export { getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, updateDataSource, checkDatabaseConnectionByJobId, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, exportJobFromDatabaseToSpreadsheet }
+export { getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, updateDataSource, checkDatabaseConnectionByJobId, listAllDatabaseTable, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, exportJobFromDatabaseToSpreadsheet }

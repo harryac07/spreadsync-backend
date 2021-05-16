@@ -279,6 +279,25 @@ class SpreadSheet {
       );
     });
   }
+
+  async getValuesFromSheet(spreadsheetId, range) {
+    // const appendDataRange = `${sheetData?.sheet_name}!${sheetData?.range}`;
+    return new Promise((resolve, reject) => {
+      this.sheet.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+        auth: this.authClient,
+      }, (err, response) => {
+        if (err) {
+          // Handle error
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(response.data?.values ?? []);
+        }
+      });
+    });
+  }
 }
 
 export default SpreadSheet;
