@@ -247,7 +247,23 @@ const getJobDataSource = async (req, res) => {
     if (!id) {
       throw new Error('Job id is required!');
     }
-    const jobDataSource: DataSource[] = await Job.getJobDataSource(id);
+    const jobDataSource: DataSource[] = await Job.getJobDataSource(id, null);
+    res.status(200).json(jobDataSource);
+  } catch (e) {
+    console.error(e.stack);
+    res.status(500).json({
+      message: e.message || 'Invalid Request',
+    });
+  }
+}
+
+const getDataSourceByDatasourceId = async (req, res) => {
+  try {
+    const { data_source_id } = req.params;
+    if (!data_source_id) {
+      throw new Error('Data source id is required!');
+    }
+    const jobDataSource: DataSource[] = await Job.getDataSourceById(data_source_id);
     res.status(200).json(jobDataSource);
   } catch (e) {
     console.error(e.stack);
@@ -259,11 +275,11 @@ const getJobDataSource = async (req, res) => {
 
 const checkDatabaseConnectionByJobId = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (!id) {
-      throw new Error('Job id is required!');
+    const { data_source_id } = req.params;
+    if (!data_source_id) {
+      throw new Error('Data source id is required!');
     }
-    const [jobDataSource]: DataSource[] = await Job.getJobDataSource(id);
+    const [jobDataSource]: DataSource[] = await Job.getDataSourceById(data_source_id);
     /* Connect to db */
     let dbInstance;
     try {
@@ -443,4 +459,4 @@ const exportJobFromDatabaseToSpreadsheet = async (req, res) => {
   }
 }
 
-export { getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, updateDataSource, checkDatabaseConnectionByJobId, listAllDatabaseTable, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, exportJobFromDatabaseToSpreadsheet }
+export { getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, getDataSourceByDatasourceId, updateDataSource, checkDatabaseConnectionByJobId, listAllDatabaseTable, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, exportJobFromDatabaseToSpreadsheet }

@@ -26,11 +26,6 @@ class ExportJob {
     return sheetRowsResponse;
   }
 
-  // async getDataFromDatabase() {
-  //   const { db } = await ClientDBSource.init(this.jobId);
-
-  // }
-
   async getJobById() {
     const [job] = await Job.getJobById(this.jobId);
     return job;
@@ -57,7 +52,7 @@ class ExportJob {
 
   async _exportFromSpreadSheetToDatabase() {
     /* Check if target db table is configured */
-    const { db, config } = await ClientDBSource.init(this.jobId);
+    const { db, config } = await ClientDBSource.init(this.jobId, 'target');
     const tableName = config.tablename;
     if (!tableName) {
       throw new Error('Table name is not set!');
@@ -85,7 +80,7 @@ class ExportJob {
   async _exportFromDBToSpreadSheet() {
 
     /* Run script to get data from DB */
-    const { db, config } = await ClientDBSource.init(this.jobId);
+    const { db, config } = await ClientDBSource.init(this.jobId, 'source');
     const dbResponse = await db.raw(`${config.script}`);
     const dataRows = dbResponse?.rows;
     if (!dataRows?.length) {

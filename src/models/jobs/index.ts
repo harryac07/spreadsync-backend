@@ -58,22 +58,13 @@ const getJobByProjectId = async (projectId: string): Promise<Job[]> => {
       project: projectId,
     });
 };
-const getJobDataSource = async (jobId: string): Promise<DataSourceTypes[]> => {
-  const [jobData] = await getJobById(jobId);
-  if (jobData?.id) {
-    const dataSource = jobData?.data_source ?? ''
-    switch (dataSource) {
-      case 'database':
-      default:
-        return db('source_database')
-          .select()
-          .where({
-            job: jobId,
-          });
-    }
-  } else {
-    throw new Error('No jobId found!')
-  }
+const getJobDataSource = async (jobId: string, reqType: 'source' | 'target' | null): Promise<DataSourceTypes[]> => {
+  return db('source_database')
+    .select()
+    .where({
+      job: jobId,
+      ...(reqType ? { data_type: reqType } : {})
+    });
 };
 
 const getDataSourceById = async (dataSourceId: string): Promise<DataSourceTypes[]> => {

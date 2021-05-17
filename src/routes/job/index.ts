@@ -15,6 +15,7 @@ router.post('/:id/sheets/config', checkAuth, jobController.createSpreadSheetConf
 router.get('/:id/sheets/config', checkAuth, jobController.getSpreadSheetConfigForJob);
 router.patch('/:id/sheets/config/:config_id', checkAuth, jobController.updateSpreadSheetConfigForJob);
 router.patch('/:id/datasource/:data_source_id', checkAuth, jobController.updateDataSource);
+router.get('/:id/datasource/:data_source_id', checkAuth, jobController.getDataSourceByDatasourceId);
 router.post('/:id/datasource/:data_source_id/connection-check', checkAuth, jobController.checkDatabaseConnectionByJobId);
 router.get('/:id/datasource/:data_source_id/list-table', checkAuth, jobController.listAllDatabaseTable);
 // Export job

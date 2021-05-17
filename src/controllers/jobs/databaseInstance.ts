@@ -1,6 +1,9 @@
 import knex from 'knex';
 import { Job } from '../../models';
 
+
+type ReqType = 'target' | 'source';
+
 class DatabaseSource {
   db: any;
   jobId: string;
@@ -14,10 +17,10 @@ class DatabaseSource {
  * init - Init method
  * @param {String} jobId - job id
  */
-  static init(jobId: string) {
+  static init(jobId: string, type: ReqType) {
     return (async function () {
       let dbSource = new DatabaseSource(jobId)
-      await dbSource.initialiseDatabase();
+      await dbSource.initialiseDatabase(type);
       return {
         db: dbSource.db,
         config: dbSource.dbConfig
@@ -25,8 +28,8 @@ class DatabaseSource {
     }())
   }
 
-  async initialiseDatabase(): Promise<void> {
-    const [dataSource] = await Job.getJobDataSource(this.jobId);
+  async initialiseDatabase(type: ReqType): Promise<void> {
+    const [dataSource] = await Job.getJobDataSource(this.jobId, type);
     if (!dataSource) {
       throw new Error('Datasource not found with jobId!');
     }
