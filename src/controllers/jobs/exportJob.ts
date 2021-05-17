@@ -48,6 +48,12 @@ class ExportJob {
       return;
     }
 
+    /* database to database */
+    if (source === 'database' && target === 'database') {
+      await this._exportFromDatabaseToDatabase();
+      return;
+    }
+
   }
 
   async _exportFromSpreadSheetToDatabase() {
@@ -75,6 +81,27 @@ class ExportJob {
       await trx(tableName).insert(formattedRows);
     });
     console.log(`Data ${config.enrich_type === 'replace' ? 'replaced' : 'appended'} with ${formattedRows.length} records to table ${tableName}`);
+  }
+
+  async _exportFromDatabaseToDatabase() {
+    /* Run script to get data from DB */
+    const { db: sourceDB, config: sourceConfig } = await ClientDBSource.init(this.jobId, 'source');
+    const dbResponse = await sourceDB.raw(`${sourceConfig.script}`);
+    const dataToExport = dbResponse?.rows;
+    if (!dataToExport?.length) {
+      throw new Error('No data to export!');
+    }
+
+    /* insert data into table */
+    const { db: targetDB, config: targetDBConfig } = await ClientDBSource.init(this.jobId, 'target');
+    const tableName = targetDBConfig.tablename;
+    await targetDB.transaction(async (trx) => {
+      if (targetDBConfig.enrich_type === 'replace') {
+        await trx(tableName).del();
+      }
+      await trx(tableName).insert(dataToExport);
+    });
+    console.log(`Data ${targetDBConfig.enrich_type === 'replace' ? 'replaced' : 'appended'} with ${dataToExport.length} records to table ${tableName}`);
   }
 
   async _exportFromDBToSpreadSheet() {
