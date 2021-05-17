@@ -70,7 +70,7 @@ export const _inviteUserToProject: InviteUserToProject = async (
     }
   });
 };
-const createProject = async (req, res) => {
+const createProject = async (req, res, next) => {
   try {
     const { id } = req.locals.user;
     const { account_id } = req.headers;
@@ -95,10 +95,7 @@ const createProject = async (req, res) => {
 
     res.status(200).json(projectResponse);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
 
