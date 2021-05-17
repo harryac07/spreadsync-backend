@@ -177,7 +177,7 @@ export const up = async (knex: Knex) => {
       range text,
       type text, --target or source
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
-      UNIQUE (job_id, spreadsheet_id)
+      UNIQUE (job_id, spreadsheet_id, type)
     );
 
     CREATE TABLE IF NOT EXISTS payment(

@@ -36,24 +36,74 @@ class ExportJob {
     const source = job.data_source;
     const target = job.data_target;
 
-    /* Database to others */
+    /**
+     * Database to others
+     */
+    // 1. Database to Spreadsheet
     if (source === 'database' && target === 'spreadsheet') {
       await this._exportFromDBToSpreadSheet();
       return;
     }
 
-    /* Spreadsheet to others */
+    // 2. Database to Database
+    if (source === 'database' && target === 'database') {
+      await this._exportFromDatabaseToDatabase();
+      return;
+    }
+    /**
+     * Spreadsheet to others
+     */
+
+    // 1. Spreadsheet to Database
     if (source === 'spreadsheet' && target === 'database') {
       await this._exportFromSpreadSheetToDatabase();
       return;
     }
 
-    /* database to database */
-    if (source === 'database' && target === 'database') {
-      await this._exportFromDatabaseToDatabase();
+    // 2. Spreadsheet to Spreadsheet
+    if (source === 'spreadsheet' && target === 'spreadsheet') {
+      await this._exportFromSpreadSheetToSpreadSheet();
       return;
     }
 
+  }
+
+  async _exportFromSpreadSheetToSpreadSheet() {
+    /* Get rows from sheet */
+    const sheetData: any[] = await this.getDataFromSheet('source');
+
+    if (!sheetData.length) {
+      throw new Error('Source sheet is empty.');
+    }
+
+    /* Get target sheet config */
+    const googleClient = await GoogleApi.initForJob(this.jobId);
+    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+
+    const targetSheetConfig = await this.getSpreadSheetConfigForJob('target');
+    const spreadsheetId = targetSheetConfig?.spreadsheet_id;
+    const sheetId = targetSheetConfig?.sheet;
+    const isIncludeHeader = targetSheetConfig?.include_column_header ?? false;
+    const appendDataRange = `${targetSheetConfig?.sheet_name}!${targetSheetConfig?.range}`;
+
+    /* Clear target sheet if needed */
+    if (targetSheetConfig?.enrich_type === 'replace') {
+      // Clear sheet completely if enrich_type is replace
+      await sheetApi.clearRowsInSheet(
+        spreadsheetId,
+        sheetId,
+        true
+      );
+      console.info('Sheet cleared for: ', targetSheetConfig?.sheet_name);
+    }
+
+    /*  */
+    const formattedData = isIncludeHeader ? sheetData : sheetData.slice(1)
+
+    /* Export to sheet */
+    await sheetApi.appendDataToSheet(spreadsheetId, appendDataRange, formattedData);
+
+    console.info('Export complete');
   }
 
   async _exportFromSpreadSheetToDatabase() {
@@ -72,6 +122,9 @@ class ExportJob {
     const formattedRows = sheetRows.map(each => {
       return zipObject(header, each);
     });
+    if (!formattedRows.length) {
+      throw new Error('Source sheet is empty.');
+    }
 
     /* insert data into table */
     await db.transaction(async (trx) => {
