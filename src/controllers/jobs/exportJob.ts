@@ -17,7 +17,7 @@ class ExportJob {
   }
 
   async getDataFromSheet(type): Promise<any[]> {
-    const googleClient = await GoogleApi.initForJob(this.jobId);
+    const googleClient = await GoogleApi.initForJob(this.jobId, type);
     const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
 
     const config = await this.getSpreadSheetConfigForJob(type);
@@ -77,7 +77,7 @@ class ExportJob {
     }
 
     /* Get target sheet config */
-    const googleClient = await GoogleApi.initForJob(this.jobId);
+    const googleClient = await GoogleApi.initForJob(this.jobId, 'target');
     const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
 
     const targetSheetConfig = await this.getSpreadSheetConfigForJob('target');
@@ -168,7 +168,7 @@ class ExportJob {
     }
 
     /* Get sheet config */
-    const googleClient = await GoogleApi.initForJob(this.jobId);
+    const googleClient = await GoogleApi.initForJob(this.jobId, 'target');
     const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
 
     const sheetData = await this.getSpreadSheetConfigForJob('target');

@@ -3,68 +3,69 @@ import GoogleSheet from './sheet';
 
 type DataJobType = 'source' | 'target';
 
-const createNewSpreadSheet = async (req, res) => {
+const createNewSpreadSheet = async (req, res, next) => {
   try {
     const { id: userId } = req.locals?.user ?? {};
     const { job_id: jobId } = req.params;
     if (!userId) {
       throw new Error('User not authenticated!');
     }
-    const { spreadsheet_name = '' } = req.body;
+    const { spreadsheet_name = '', type } = req.body;
     if (!spreadsheet_name) {
       throw new Error('Spreadsheet name is required!');
     }
-    const googleClient = await GoogleApi.initForJob(jobId);
+    const googleClient = await GoogleApi.initForJob(jobId, type);
     const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
     const spreadsheetId: string = await sheetApi.createSpreadsheet(spreadsheet_name);
     res.status(200).json({
       spreadsheet_id: spreadsheetId
     });
   } catch (error) {
-    console.error(error.stack);
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+    next(error);
   }
 }
 
-const listAllGoogleSheetsForJob = async (req, res) => {
+const listAllGoogleSheetsForJob = async (req, res, next) => {
   try {
     const { id: userId } = req.locals?.user ?? {};
-    const { job_id: jobId, nextPageToken } = req.params;
+    const { job_id: jobId } = req.params;
+    const { nextPageToken, reqType } = req.query;
     if (!userId) {
       throw new Error('User not authenticated!');
     }
-    const googleClient = await GoogleApi.initForJob(jobId);
-    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
-    const sheetList = await sheetApi.listAllSpreadSheetsFromDrive(nextPageToken);
-    res.status(200).json(sheetList);
+
+    let sheetList: any = { files: [] };
+    try {
+      const googleClient = await GoogleApi.initForJob(jobId, reqType);
+      const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+      sheetList = await sheetApi.listAllSpreadSheetsFromDrive(nextPageToken);
+    } finally {
+      res.status(200).json({
+        ...sheetList,
+        type: reqType
+      });
+    }
+    return;
   } catch (error) {
-    console.error(error.stack);
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+    next(error);
   }
 }
 
-const getSpreadSheet = async (req, res) => {
+const getSpreadSheet = async (req, res, next) => {
   try {
     const { id: userId } = req.locals?.user ?? {};
     const { id: spreadSheetId, job_id: jobId } = req.params;
-    const { data_type: dataType }: { data_type: DataJobType } = req.query; // will be handled later when sheet => sheet sync is supported
+    const { data_type: dataType }: { data_type: DataJobType } = req.query;
 
     if (!userId) {
       throw new Error('User not authenticated!');
     }
-    const googleClient = await GoogleApi.initForJob(jobId);
+    const googleClient = await GoogleApi.initForJob(jobId, dataType);
     const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
     const spreadSheet = await sheetApi.getSpreadSheet(spreadSheetId);
     res.status(200).json(spreadSheet);
   } catch (error) {
-    console.error(error.stack);
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+    next(error);
   }
 }
 

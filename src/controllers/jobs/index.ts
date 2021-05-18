@@ -8,7 +8,7 @@ import { getFormattedDataWithHeader, getFormattedDataBody } from '../utils';
 import ExportJob from './exportJob';
 import { Job as JobTypes, CreateJobPayload, DataSource, JobSchedule } from 'src/types';
 
-const createJob = async (req, res) => {
+const createJob = async (req, res, next) => {
   try {
     /* 
       project: '121212',
@@ -51,13 +51,10 @@ const createJob = async (req, res) => {
 
     res.status(200).json(job);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
-const getAllJobs = async (req, res) => {
+const getAllJobs = async (req, res, next) => {
   try {
     const { account_id } = req.headers;
 
@@ -67,14 +64,11 @@ const getAllJobs = async (req, res) => {
     const jobs: JobTypes[] = await Job.getAllJobs();
     res.status(200).json(jobs);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
 
-const getJobById = async (req, res) => {
+const getJobById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -84,14 +78,11 @@ const getJobById = async (req, res) => {
     const job: JobTypes[] = await Job.getJobById(id);
     res.status(200).json(job);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
 
-const deleteJobById = async (req, res) => {
+const deleteJobById = async (req, res, next) => {
   try {
     const { id: jobId } = req.params;
 
@@ -108,14 +99,11 @@ const deleteJobById = async (req, res) => {
 
     res.status(200).json([]);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
 
-const updateJob = async (req, res) => {
+const updateJob = async (req, res, next) => {
   try {
     const { id } = req.params;
     const reqPayload = req.body;
@@ -146,14 +134,11 @@ const updateJob = async (req, res) => {
     const job: JobTypes[] = await Job.updateJobDetail(id, updateJobPayload);
     res.status(200).json(job);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
 
-const getJobByProjectId = async (req, res) => {
+const getJobByProjectId = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!id) {
@@ -162,14 +147,11 @@ const getJobByProjectId = async (req, res) => {
     const jobs: JobTypes[] = await Job.getJobByProjectId(id);
     res.status(200).json(jobs);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
 
-const createDataSource = async (req, res) => {
+const createDataSource = async (req, res, next) => {
   try {
     const { id } = req.params;
     const reqPayload = req.body;
@@ -197,15 +179,12 @@ const createDataSource = async (req, res) => {
     const dataSource: DataSource[] = await Job.createJobDataSource(dataSourcePayload);
     res.status(200).json(dataSource);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
 
 
-const updateDataSource = async (req, res) => {
+const updateDataSource = async (req, res, next) => {
   try {
     const reqPayload = req.body;
     const { id: jobId, data_source_id: dataSourceId } = req.params;
@@ -234,14 +213,11 @@ const updateDataSource = async (req, res) => {
     const dataSource: DataSource[] = await Job.updateJobDataSource(dataSourceId, dataSourcePayload);
     res.status(200).json(dataSource);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
 
-const getJobDataSource = async (req, res) => {
+const getJobDataSource = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!id) {
@@ -250,14 +226,11 @@ const getJobDataSource = async (req, res) => {
     const jobDataSource: DataSource[] = await Job.getJobDataSource(id, null);
     res.status(200).json(jobDataSource);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
 
-const getDataSourceByDatasourceId = async (req, res) => {
+const getDataSourceByDatasourceId = async (req, res, next) => {
   try {
     const { data_source_id } = req.params;
     if (!data_source_id) {
@@ -266,14 +239,11 @@ const getDataSourceByDatasourceId = async (req, res) => {
     const jobDataSource: DataSource[] = await Job.getDataSourceById(data_source_id);
     res.status(200).json(jobDataSource);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
 
-const checkDatabaseConnectionByJobId = async (req, res) => {
+const checkDatabaseConnectionByJobId = async (req, res, next) => {
   try {
     const { data_source_id } = req.params;
     if (!data_source_id) {
@@ -300,14 +270,11 @@ const checkDatabaseConnectionByJobId = async (req, res) => {
       }
     }
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
 
-const listAllDatabaseTable = async (req, res) => {
+const listAllDatabaseTable = async (req, res, next) => {
   try {
     const { data_source_id } = req.params;
     if (!data_source_id) {
@@ -342,13 +309,10 @@ const listAllDatabaseTable = async (req, res) => {
     }
     res.status(200).json(databaseTable?.rows ?? []);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
-const createSpreadSheetConfigForJob = async (req, res) => {
+const createSpreadSheetConfigForJob = async (req, res, next) => {
   try {
     type reqPayloadTypes = {
       include_column_header: boolean;
@@ -379,14 +343,11 @@ const createSpreadSheetConfigForJob = async (req, res) => {
     });
     res.status(200).json(spreadsheetConfig);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
 
-const getSpreadSheetConfigForJob = async (req, res) => {
+const getSpreadSheetConfigForJob = async (req, res, next) => {
   try {
     const { id: userId } = req.locals?.user;
     const { id: jobId } = req.params;
@@ -402,14 +363,11 @@ const getSpreadSheetConfigForJob = async (req, res) => {
     );
     res.status(200).json(spreadsheetConfig);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
 
-const updateSpreadSheetConfigForJob = async (req, res) => {
+const updateSpreadSheetConfigForJob = async (req, res, next) => {
   try {
     type reqPayloadTypes = {
       include_column_header?: boolean;
@@ -431,14 +389,11 @@ const updateSpreadSheetConfigForJob = async (req, res) => {
     const spreadsheetConfig = await Job.updateSpreadSheetConfigForJob(configId, reqPayload);
     res.status(200).json(spreadsheetConfig);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
 
-const exportJobFromDatabaseToSpreadsheet = async (req, res) => {
+const exportJobFromDatabaseToSpreadsheet = async (req, res, next) => {
   try {
     const { id: jobId } = req.params;
     const type = req?.body?.type ?? 'target';
@@ -452,10 +407,7 @@ const exportJobFromDatabaseToSpreadsheet = async (req, res) => {
 
     res.status(200).json({ data: 'Data exported to sheet successfully!' });
   } catch (e) {
-    console.error(e.message);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 }
 

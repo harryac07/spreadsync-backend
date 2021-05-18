@@ -168,7 +168,7 @@ const _signAndGetAuthToken = (userObject: { id: string; email: string }): UserAu
   return authTokenPayload;
 };
 
-const signup = async (req, res) => {
+const signup = async (req, res, next) => {
   passport.authenticate(
     'signup',
     { session: false },
@@ -210,16 +210,13 @@ const signup = async (req, res) => {
         }
         res.status(201).json(user);
       } catch (e) {
-        console.error(e.stack);
-        res.status(500).json({
-          message: e.message || 'Invalid Request',
-        });
+        next(e);
       }
     },
-  )(req, res);
+  )(req, res, next);
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   passport.authenticate(
     'login',
     { session: false },
@@ -262,17 +259,14 @@ const login = async (req, res) => {
         await User.trackUserAuthToken(authTokenPayload);
 
         res.status(200).json({ token: authTokenPayload.token });
-      } catch (error) {
-        console.error(error.stack);
-        res.status(500).json({
-          message: error.message || 'Invalid Request',
-        });
+      } catch (e) {
+        next(e);
       }
     },
-  )(req, res);
+  )(req, res, next);
 };
 
-const loginAuth = async (req, res) => {
+const loginAuth = async (req, res, next) => {
   const { authCode, auth = '' } = req.body;
   try {
     if (auth !== 'google' || !authCode) {
@@ -310,15 +304,12 @@ const loginAuth = async (req, res) => {
     await User.trackUserAuthToken(authTokenPayload);
 
     res.status(200).json({ token: authTokenPayload.token });
-  } catch (error) {
-    console.error(error.stack);
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+  } catch (e) {
+    next(e);
   }
 };
 
-const activateUser = async (req, res) => {
+const activateUser = async (req, res, next) => {
   try {
     const { token } = req.body;
     // verify token is valid
@@ -345,15 +336,12 @@ const activateUser = async (req, res) => {
     res.status(200).json({
       message: 'User activated successfully!',
     });
-  } catch (error) {
-    console.error(error.stack);
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+  } catch (e) {
+    next(e);
   }
 };
 
-const saveSocialAuth = async (req, res) => {
+const saveSocialAuth = async (req, res, next) => {
   type reqPayloadType = { authCode: string; jobId: string; type: 'source' | 'target' };
   const { authCode, jobId, type }: reqPayloadType = req.body;
   const { name }: { name: socialTypes } = req.params;
@@ -378,19 +366,18 @@ const saveSocialAuth = async (req, res) => {
       social_name: name,
       type: type
     };
+
     await SocialAuth.createSocialAuthForJob(reqPayload);
     res.status(200).json({
       message: 'Social auth created successfully!',
     });
-  } catch (error) {
-    console.log(error.stack);
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+  } catch (e) {
+    console.log('eheheh')
+    next(e);
   }
 }
 
-const getSocialAuthByJobId = async (req, res) => {
+const getSocialAuthByJobId = async (req, res, next) => {
   try {
     type ParamsTypes = { name: socialTypes; job_id: string };
     const { name, job_id }: ParamsTypes = req.params;
@@ -400,11 +387,8 @@ const getSocialAuthByJobId = async (req, res) => {
     const fieldsOnly: string[] = ['id', 'user_id', 'type', 'social_name'];
     const socialAuthForJob = await SocialAuth.getSocialAuthByJobId(job_id, filter, fieldsOnly);
     res.status(200).json(socialAuthForJob);
-  } catch (error) {
-    console.error(error.stack)
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+  } catch (e) {
+    next(e);
   }
 }
 

@@ -47,23 +47,20 @@ class GoogleAuth {
     }())
   }
 
-  /**
-   * initForJob - Init method for refreshing token by job id
-   * @param {String} jobId - Job id to check token in DB
-   */
-  static initForJob(jobId: string) {
+  static initForJob(jobId: string, reqType: 'source' | 'target' | any = null) {
     return (async function () {
       let googleAuth = new GoogleAuth()
-      await googleAuth.refreshTokenFromDB(jobId)
+      await googleAuth.refreshTokenFromDB(jobId, reqType)
       return googleAuth
     }())
   }
 
-  async refreshTokenFromDB(jobId: string) {
+  async refreshTokenFromDB(jobId: string, reqType: 'source' | 'target') {
     /* fetch token from db */
-    const [socialAuthJob] = await SocialAuth.getSocialAuthByJobId(jobId);
+    const [socialAuthJob] = await SocialAuth.getSocialAuthByJobId(jobId, reqType ? { type: reqType } : null);
+
     if (isEmpty(socialAuthJob)) {
-      throw new Error('Refresh token is empty! Please re-connect again.')
+      throw new Error('Refresh token is empty! Please re-connect again.');
     }
     const payloadData = {
       token_type: socialAuthJob.token_type,

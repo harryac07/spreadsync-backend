@@ -1,31 +1,25 @@
 import { Account } from '../../models';
 
-const getAllAccounts = async (req, res) => {
+const getAllAccounts = async (req, res, next) => {
   try {
     const accounts = await Account.getAllAccounts();
     res.status(200).json(accounts);
   } catch (error) {
-    console.error(error.stack);
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+    next(error);
   }
 };
 
-const createAccount = async (req, res) => {
+const createAccount = async (req, res, next) => {
   try {
     const payload = req.body;
     const account = await Account.createAccount(payload);
     res.status(200).json(account);
   } catch (error) {
-    console.error(error.stack);
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+    next(error);
   }
 };
 
-const getAccountByAccountName = async (req, res) => {
+const getAccountByAccountName = async (req, res, next) => {
   try {
     const { name } = req.params;
     if (!name) {
@@ -34,10 +28,7 @@ const getAccountByAccountName = async (req, res) => {
     const account = await Account.getAccountByAccountName(name);
     res.status(200).json(account);
   } catch (error) {
-    console.error(error.stack);
-    res.status(500).json({
-      message: error.message || 'Invalid Request',
-    });
+    next(error);
   }
 };
 

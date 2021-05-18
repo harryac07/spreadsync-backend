@@ -49,6 +49,7 @@ class SpreadSheet {
       }, (err, res) => {
         if (err) {
           reject(err);
+          return;
         }
         const files = res.data ?? {};
         resolve(files);

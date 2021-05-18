@@ -99,7 +99,7 @@ const createProject = async (req, res, next) => {
   }
 };
 
-const getAllProjects = async (req, res) => {
+const getAllProjects = async (req, res, next) => {
   try {
     const { account_id } = req.headers;
 
@@ -110,36 +110,27 @@ const getAllProjects = async (req, res) => {
     const projects: ProjectWithRelations[] = await Project.getAllProjectsWithOtherRelations(filters);
     res.status(200).json(projects);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
 
-const getProjectById = async (req, res) => {
+const getProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const projects: ProjectWithRelations[] = await Project.getProjectById(id);
     res.status(200).json(projects);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
 
-const getAllJobsForProject = async (req, res) => {
+const getAllJobsForProject = async (req, res, next) => {
   try {
     const { id } = req.params;
     const jobs: JobListWithProject = await Project.getAllJobsByProjectId(id);
     res.status(200).json(jobs);
   } catch (e) {
-    console.error(e.stack);
-    res.status(500).json({
-      message: e.message || 'Invalid Request',
-    });
+    next(e);
   }
 };
 

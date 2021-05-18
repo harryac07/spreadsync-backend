@@ -52,8 +52,8 @@ app.use(function onError(err, req, res, next) {
   // Error logging to our Sentry
   Sentry.withScope((scope) => {
     scope.setUser({
-      id: req.locals?.user?.id,
-      email: req.locals?.user?.email
+      id: req.locals?.user?.id ?? '',
+      email: req.locals?.user?.email ?? ''
     });
     scope.setTransactionName(req.method + ' ' + req.path)
     Sentry.captureException(err);
