@@ -320,6 +320,7 @@ const createSpreadSheetConfigForJob = async (req, res, next) => {
       range: string;
       sheet: string;
       spreadsheet_id: string;
+      spreadsheet_name: string;
       type: 'source' | 'target';
     }
     const { id: userId } = req.locals?.user;
@@ -375,6 +376,7 @@ const updateSpreadSheetConfigForJob = async (req, res, next) => {
       range?: string;
       sheet?: string;
       spreadsheet_id?: string;
+      spreadsheet_name?: string;
       type?: 'source' | 'target';
     }
     const { id: userId } = req.locals?.user;

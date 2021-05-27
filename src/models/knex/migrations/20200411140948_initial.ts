@@ -170,6 +170,7 @@ export const up = async (knex: Knex) => {
       user_id UUID REFERENCES "user"(id),
       job_id UUID REFERENCES job(id),
       spreadsheet_id text,
+      spreadsheet_name text,
       sheet text,
       sheet_name text,
       include_column_header boolean,

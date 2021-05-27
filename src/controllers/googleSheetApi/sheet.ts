@@ -40,7 +40,7 @@ class SpreadSheet {
   listAllSpreadSheetsFromDrive(nextPageToken?: string): Promise<any[]> {
     return new Promise((resolve, reject) => {
       this.drive.files.list({
-        pageSize: 20,
+        pageSize: 50,
         spaces: 'drive',
         fields: 'nextPageToken, files(id, name)',
         q: "mimeType='application/vnd.google-apps.spreadsheet'",
