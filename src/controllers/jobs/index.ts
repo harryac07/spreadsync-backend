@@ -1,25 +1,10 @@
 import knex from 'knex';
-import dbClient from '../../models/db';
 import { Job } from '../../models';
-import ClientDBSource from './databaseInstance';
-import GoogleApi from '../../util/googleAuth';
-import GoogleSheet from '../googleSheetApi/sheet';
-import { getFormattedDataWithHeader, getFormattedDataBody } from '../utils';
 import ExportJob from './exportJob';
-import { Job as JobTypes, CreateJobPayload, DataSource, JobSchedule } from 'src/types';
+import { Job as JobTypes, CreateJobPayload, DataSource } from 'src/types';
 
 const createJob = async (req, res, next) => {
   try {
-    /* 
-      project: '121212',
-      data_destination: "spreadsheet"
-      data_source: "database"
-      description: "sasasas"
-      name: "hari"
-      type: "test"
-      unit: "hours"
-      value: 1,
-    */
     const reqPayload = {
       ...req.body,
       created_by: req.locals.user

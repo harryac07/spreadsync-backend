@@ -1,6 +1,5 @@
 import { zipObject } from 'lodash';
 import ClientDBSource from './databaseInstance';
-import GoogleApi from '../../util/googleAuth';
 import GoogleSheet from '../googleSheetApi/sheet';
 import { Job } from '../../models';
 
@@ -11,15 +10,16 @@ class ExportJob {
   constructor(jobId) {
     this.jobId = jobId;
   }
-  async getSpreadSheetConfigForJob(type: 'source' | 'target' = "source") {
+  async getSpreadSheetConfigForJob(type: 'source' | 'target') {
+    if (!type) {
+      throw new Error('Rquest type must be provided');
+    }
     const [sheetData] = await Job.getSpreadSheetConfigForJob(this.jobId, { type });
     return sheetData;
   }
 
   async getDataFromSheet(type): Promise<any[]> {
-    const googleClient = await GoogleApi.initForJob(this.jobId, type);
-    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
-
+    const sheetApi = await GoogleSheet.init(this.jobId, type);
     const config = await this.getSpreadSheetConfigForJob(type);
     const sheetRange = `${config?.sheet_name}`;
     const sheetRowsResponse = await sheetApi.getValuesFromSheet(config.spreadsheet_id, sheetRange) as any;
@@ -77,10 +77,10 @@ class ExportJob {
     }
 
     /* Get target sheet config */
-    const googleClient = await GoogleApi.initForJob(this.jobId, 'target');
-    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+    const reqType = 'target';
+    const sheetApi = await GoogleSheet.init(this.jobId, reqType);
 
-    const targetSheetConfig = await this.getSpreadSheetConfigForJob('target');
+    const targetSheetConfig = await this.getSpreadSheetConfigForJob(reqType);
     const spreadsheetId = targetSheetConfig?.spreadsheet_id;
     const sheetId = targetSheetConfig?.sheet;
     const isIncludeHeader = targetSheetConfig?.include_column_header ?? false;
@@ -168,10 +168,10 @@ class ExportJob {
     }
 
     /* Get sheet config */
-    const googleClient = await GoogleApi.initForJob(this.jobId, 'target');
-    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+    const targetType = 'target';
+    const sheetApi = await GoogleSheet.init(this.jobId, targetType);
 
-    const sheetData = await this.getSpreadSheetConfigForJob('target');
+    const sheetData = await this.getSpreadSheetConfigForJob(targetType);
     const spreadsheetId = sheetData?.spreadsheet_id;
     const sheetId = sheetData?.sheet;
     const isIncludeHeader = sheetData?.include_column_header ?? false;

@@ -49,6 +49,12 @@ class GoogleAuth {
 
   static initForJob(jobId: string, reqType: 'source' | 'target' | any = null) {
     return (async function () {
+      if (!reqType) {
+        throw new Error('Request type must be provided to init Google Auth for job');
+      }
+      if (!jobId) {
+        throw new Error('Job id is required!');
+      }
       let googleAuth = new GoogleAuth()
       await googleAuth.refreshTokenFromDB(jobId, reqType)
       return googleAuth

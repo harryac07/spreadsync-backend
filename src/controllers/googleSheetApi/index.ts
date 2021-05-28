@@ -1,4 +1,3 @@
-import GoogleApi from '../../util/googleAuth';
 import GoogleSheet from './sheet';
 
 type DataJobType = 'source' | 'target';
@@ -14,8 +13,7 @@ const createNewSpreadSheet = async (req, res, next) => {
     if (!spreadsheet_name) {
       throw new Error('Spreadsheet name is required!');
     }
-    const googleClient = await GoogleApi.initForJob(jobId, type);
-    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+    const sheetApi = await GoogleSheet.init(jobId, type);
     const spreadsheetId: string = await sheetApi.createSpreadsheet(spreadsheet_name);
     res.status(200).json({
       spreadsheet_id: spreadsheetId
@@ -36,8 +34,7 @@ const listAllGoogleSheetsForJob = async (req, res, next) => {
 
     let sheetList: any = { files: [] };
     try {
-      const googleClient = await GoogleApi.initForJob(jobId, reqType);
-      const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+      const sheetApi = await GoogleSheet.init(jobId, reqType);
       sheetList = await sheetApi.listAllSpreadSheetsFromDrive(nextPageToken);
     } finally {
       res.status(200).json({
@@ -60,8 +57,7 @@ const getSpreadSheet = async (req, res, next) => {
     if (!userId) {
       throw new Error('User not authenticated!');
     }
-    const googleClient = await GoogleApi.initForJob(jobId, dataType);
-    const sheetApi = new GoogleSheet(googleClient.oAuth2Client);
+    const sheetApi = await GoogleSheet.init(jobId, dataType);
     const spreadSheet = await sheetApi.getSpreadSheet(spreadSheetId);
     res.status(200).json(spreadSheet);
   } catch (error) {

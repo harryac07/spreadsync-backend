@@ -1,12 +1,5 @@
 import { google } from 'googleapis';
 import GoogleApi from '../../util/googleAuth';
-import { Job } from '../../models';
-
-const SCOPES = [
-  "https://www.googleapis.com/auth/spreadsheets",
-  "https://www.googleapis.com/auth/drive",
-];
-
 
 class SpreadSheet {
   sheet: any;
@@ -19,6 +12,20 @@ class SpreadSheet {
     this.oauth2 = google.oauth2('v2');
 
     this.authClient = googleClient;
+  }
+
+  static init(jobId: string, reqType: 'source' | 'target' | any = null) {
+    return (async function () {
+      if (!reqType) {
+        throw new Error('Request type must be provided to init Google Auth for job');
+      }
+      if (!jobId) {
+        throw new Error('Job id is required!');
+      }
+      const googleClient = await GoogleApi.initForJob(jobId, reqType);
+      const spreadSheetClient = new SpreadSheet(googleClient.oAuth2Client);
+      return spreadSheetClient;
+    }())
   }
 
   async getUserDetails(): Promise<{
@@ -302,6 +309,16 @@ class SpreadSheet {
 }
 
 export default SpreadSheet;
+
+/* const job = '5213a7b1-47ec-4431-a8e2-c4162dcc318e';
+const run = async () => {
+  // initForJob
+  const s = await SpreadSheet.init(job, 'target');
+  const list = await s.listAllSpreadSheetsFromDrive()
+  console.log('users ', list);
+}
+run(); */
+
 
 // h.createSpreadsheet("qt-cadencer-datastudio", ["email", "business_id", "city"])
 // 	.then(data => {
