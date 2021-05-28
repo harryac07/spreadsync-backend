@@ -62,5 +62,6 @@ app.use(function onError(err, req, res, next) {
   res.status(500).json({
     message: err.message || 'Invalid Request',
   });
+  return;
 });
 export default app;

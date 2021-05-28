@@ -366,13 +366,15 @@ const saveSocialAuth = async (req, res, next) => {
       social_name: name,
       type: type
     };
+    // delete existing old social auth for the job and type
+    await SocialAuth.deleteSocialAuthForJobByType(jobId, type);
 
+    // Create social auth for the job and type
     await SocialAuth.createSocialAuthForJob(reqPayload);
     res.status(200).json({
       message: 'Social auth created successfully!',
     });
   } catch (e) {
-    console.log('eheheh')
     next(e);
   }
 }

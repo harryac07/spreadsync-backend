@@ -24,5 +24,13 @@ const createSocialAuthForJob = async (payload: CreateSocialAuthPayload): Promise
     .returning('*');
 };
 
+const deleteSocialAuthForJobByType = async (jobId: string, reqType: 'source' | 'target'): Promise<SocialAuth[]> => {
+  return db('social_auth')
+    .where({
+      job_id: jobId,
+      type: reqType
+    }).delete()
+};
 
-export default { getSocialAuthById, getSocialAuthByJobId, createSocialAuthForJob }
+
+export default { getSocialAuthById, getSocialAuthByJobId, createSocialAuthForJob, deleteSocialAuthForJobByType }
