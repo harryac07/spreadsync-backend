@@ -1,9 +1,10 @@
-import { zipObject } from 'lodash';
+import { zipObject, isEmpty } from 'lodash';
 import ClientDBSource from './databaseInstance';
 import GoogleSheet from '../googleSheetApi/sheet';
-import { Job } from '../../models';
+import { Job, APIConfig } from '../../models';
 
 import { getFormattedDataWithHeader, getFormattedDataBody } from '../utils';
+import { _getDataFromAPIEndpoint } from './apiDataSource';
 
 class ExportJob {
   jobId: string;
@@ -63,6 +64,15 @@ class ExportJob {
     // 2. Spreadsheet to Spreadsheet
     if (source === 'spreadsheet' && target === 'spreadsheet') {
       await this._exportFromSpreadSheetToSpreadSheet();
+      return;
+    }
+    /**
+     * API endpoint to others
+     */
+
+    // 1. API endpoint to Database
+    if (source === 'api' && target === 'database') {
+      await this._exportFromAPIEndpointToDatabase();
       return;
     }
 
@@ -197,6 +207,42 @@ class ExportJob {
     await sheetApi.appendDataToSheet(spreadsheetId, appendDataRange, formattedDataToInsert);
 
     console.info('Export complete');
+  }
+
+  async _exportFromAPIEndpointToDatabase() {
+    // GET API config for the job
+    const allConfigs = await APIConfig.getAllApiConfigForJob(this.jobId);
+    const [sourceAPIConfig] = allConfigs.filter(each => {
+      return each.type === 'source';
+    })
+    if (!sourceAPIConfig) {
+      throw new Error('API config does not exists!');
+    }
+    const apiConfigId = sourceAPIConfig.id as string;
+
+    // fetch data from API endpoint
+    let apiResponseArray = await _getDataFromAPIEndpoint(apiConfigId);
+    if (!Array.isArray(apiResponseArray)) {
+      if (!isEmpty(apiResponseArray)) {
+        apiResponseArray = [apiResponseArray];
+      } else {
+        apiResponseArray = [];
+      }
+    }
+    if (apiResponseArray?.length === 0) {
+      return;
+    }
+
+    // Insert data into target table
+    const { db: targetDB, config: targetDBConfig } = await ClientDBSource.init(this.jobId, 'target');
+    const tableName = targetDBConfig.tablename;
+    await targetDB.transaction(async (trx) => {
+      if (targetDBConfig.enrich_type === 'replace') {
+        await trx(tableName).del();
+      }
+      await trx(tableName).insert(apiResponseArray);
+    });
+    console.log(`Data from API endpoint with records count ${apiResponseArray?.length} added to table ${tableName}`);
   }
 }
 

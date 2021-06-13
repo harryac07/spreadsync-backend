@@ -44,32 +44,36 @@ const updateAPIConfig = async (req, res, next) => {
 const checkApiConnection = async (req, res, next) => {
   try {
     const { apiconfig_id: id } = req.params;
-
-    /* Check API info from DB using api config id */
-    const [config]: APIConfigTypes[] = await APIConfig.getApiConfigById(id);
-
-    const [parsedParams] = JSON.parse(config.params) || [];
-    const [parsedHeaders] = JSON.parse(config.headers) || [];
-    const qs = new URLSearchParams(parsedParams)?.toString();
-    const params = qs?.includes('null=') ? '' : `?${qs}`;
-
-    /* Make AJAX request for connection check */
-    if (config.method === 'GET') {
-      await axios.get(`${config.endpoint}${params}`, {
-        headers: parsedHeaders
-      })
-    } else if (config.method === 'POST') {
-      const body = JSON.parse(config.body) || {};
-      await axios.post(`${config.endpoint}${params}`, body, {
-        headers: parsedHeaders
-      })
-    } else {
-      throw new Error('Only GET and POST methods are supported!');
-    }
+    await _getDataFromAPIEndpoint(id);
     res.status(200).json({ data: 'connected successfully!' });
   } catch (e) {
     next(e);
   }
+}
+
+const _getDataFromAPIEndpoint = async (apiConfigId: string): Promise<any[]> => {
+  /* Check API info from DB using api config id */
+  const [config]: APIConfigTypes[] = await APIConfig.getApiConfigById(apiConfigId);
+
+  const [parsedParams] = JSON.parse(config.params) || [];
+  const [parsedHeaders] = JSON.parse(config.headers) || [];
+  const qs = new URLSearchParams(parsedParams)?.toString();
+  const params = qs?.includes('null=') ? '' : `?${qs}`;
+
+  let response: any = null;
+  if (config.method === 'GET') {
+    response = await axios.get(`${config.endpoint}${params}`, {
+      headers: parsedHeaders
+    })
+  } else if (config.method === 'POST') {
+    const body = JSON.parse(config.body) || {};
+    response = await axios.post(`${config.endpoint}${params}`, body, {
+      headers: parsedHeaders
+    })
+  } else {
+    throw new Error('Only GET and POST methods are supported!');
+  }
+  return response?.data ?? [];
 }
 
 export {
@@ -77,5 +81,7 @@ export {
   getApiConfigByJobId,
   updateAPIConfig,
   checkApiConnection,
+
+  _getDataFromAPIEndpoint
 }
 
