@@ -134,7 +134,20 @@ export type SpreadsheetConfig = {
   include_column_header: boolean;
   enrich_type: 'append' | 'replace';
   range: string;
-  type: 'source' | 'target'
+  type: 'source' | 'target';
+  created_on?: string;
+}
+
+export type APIConfig = {
+  id?: string;
+  job_id: string;
+  method: 'GET' | 'POST';
+  endpoint: string;
+  params: string;
+  headers: string;
+  body: string;
+  last_connected?: string;
+  type: 'source' | 'target';
   created_on?: string;
 }
 

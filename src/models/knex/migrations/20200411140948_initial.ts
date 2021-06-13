@@ -181,6 +181,20 @@ export const up = async (knex: Knex) => {
       UNIQUE (job_id, spreadsheet_id, type)
     );
 
+    CREATE TABLE IF NOT EXISTS api_config(
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),      
+      job_id UUID REFERENCES job(id),
+      method text,
+      endpoint text,
+      params text,
+      headers text,
+      body text,
+      last_connected TIMESTAMP,
+      type text, --target or source
+      created_on TIMESTAMP NOT NULL DEFAULT NOW(),
+      UNIQUE (job_id, endpoint, type)
+    );
+
     CREATE TABLE IF NOT EXISTS payment(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       "user" UUID REFERENCES "user"(id),
@@ -273,6 +287,7 @@ export const down = async (knex: Knex) => {
     DROP TABLE IF EXISTS source_database cascade;
     DROP TABLE IF EXISTS social_auth cascade;
     DROP TABLE IF EXISTS spreadsheet_config cascade;
+    DROP TABLE IF EXISTS api_config cascade;
     DROP TABLE IF EXISTS payment cascade;
     DROP TABLE IF EXISTS user_role cascade;
     DROP TABLE IF EXISTS user_permission cascade;

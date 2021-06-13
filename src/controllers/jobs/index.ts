@@ -324,8 +324,7 @@ const createSpreadSheetConfigForJob = async (req, res, next) => {
 
     /* Update job */
     await Job.updateJobDetail(jobId, {
-      is_data_source_configured: reqPayload.type === 'source',
-      is_data_target_configured: reqPayload.type === 'target',
+      [`is_data_${reqPayload.type}_configured`]: true
     });
     res.status(200).json(spreadsheetConfig);
   } catch (e) {
@@ -398,4 +397,6 @@ const exportJobFromDatabaseToSpreadsheet = async (req, res, next) => {
   }
 }
 
-export { getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, getDataSourceByDatasourceId, updateDataSource, checkDatabaseConnectionByJobId, listAllDatabaseTable, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, exportJobFromDatabaseToSpreadsheet }
+export {
+  getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, getDataSourceByDatasourceId, updateDataSource, checkDatabaseConnectionByJobId, listAllDatabaseTable, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, exportJobFromDatabaseToSpreadsheet,
+}
