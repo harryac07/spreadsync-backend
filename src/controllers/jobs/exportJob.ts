@@ -75,6 +75,11 @@ class ExportJob {
       await this._exportFromAPIEndpointToDatabase();
       return;
     }
+    // 2. API endpoint to Spreadsheet
+    if (source === 'api' && target === 'spreadsheet') {
+      await this._exportFromAPIEndpointToSpreadSheet();
+      return;
+    }
 
   }
 
@@ -243,6 +248,57 @@ class ExportJob {
       await trx(tableName).insert(apiResponseArray);
     });
     console.log(`Data from API endpoint with records count ${apiResponseArray?.length} added to table ${tableName}`);
+  }
+
+  async _exportFromAPIEndpointToSpreadSheet() {
+    // GET API config for the job
+    const allConfigs = await APIConfig.getAllApiConfigForJob(this.jobId);
+    const [sourceAPIConfig] = allConfigs.filter(each => {
+      return each.type === 'source';
+    })
+    if (!sourceAPIConfig) {
+      throw new Error('API config does not exists!');
+    }
+    const apiConfigId = sourceAPIConfig.id as string;
+
+    // fetch data from API endpoint
+    let apiResponseArray = await _getDataFromAPIEndpoint(apiConfigId);
+    if (!Array.isArray(apiResponseArray)) {
+      if (!isEmpty(apiResponseArray)) {
+        apiResponseArray = [apiResponseArray];
+      } else {
+        apiResponseArray = [];
+      }
+    }
+    if (apiResponseArray?.length === 0) {
+      return;
+    }
+
+    // Get spreadsheet config
+    const targetType = 'target';
+    const sheetApi = await GoogleSheet.init(this.jobId, targetType);
+
+    const sheetData = await this.getSpreadSheetConfigForJob(targetType);
+    const spreadsheetId = sheetData?.spreadsheet_id;
+    const sheetId = sheetData?.sheet;
+    const isIncludeHeader = sheetData?.include_column_header ?? false;
+    const appendDataRange = `${sheetData?.sheet_name}!${sheetData?.range}`;
+
+    // Clear sheet if needed
+    if (sheetData?.enrich_type === 'replace') {
+      await sheetApi.clearRowsInSheet(
+        spreadsheetId,
+        sheetId,
+        true
+      );
+      console.info('Sheet cleared for ', sheetData?.sheet_name);
+    }
+    // Insert data to spreadsheet
+    const formattedDataToInsert: any[] = isIncludeHeader
+      ? getFormattedDataWithHeader(apiResponseArray)
+      : getFormattedDataBody(apiResponseArray)
+    await sheetApi.appendDataToSheet(spreadsheetId, appendDataRange, formattedDataToInsert);
+    console.info('Export complete');
   }
 }
 
