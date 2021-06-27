@@ -128,14 +128,21 @@ class ExportJob {
     if (!tableName) {
       throw new Error('Table name is not set!');
     }
+    /* Get column names from table */
+    const data = await db.raw(`
+      SELECT * FROM ${tableName} WHERE FALSE;
+    `);
+    const tableColumns = data?.fields?.map(({ name }) => name);
+    const columnHeader = tableColumns;
+
     /* Get rows from sheet */
     const sheetData: any[] = await this.getDataFromSheet('source');
+    const { include_column_header: columnContainsHeader } = await this.getSpreadSheetConfigForJob('source') || {};
 
-    /* Format sheetData */
-    /* For now assume sheet has header */
+    /*  Format data to make db import compatible */
     const [header, ...sheetRows] = sheetData;
-    const formattedRows = sheetRows.map(each => {
-      return zipObject(header, each);
+    const formattedRows = (columnContainsHeader ? sheetRows : sheetData).map(each => {
+      return zipObject(columnHeader, each);
     });
     if (!formattedRows.length) {
       throw new Error('Source sheet is empty.');
