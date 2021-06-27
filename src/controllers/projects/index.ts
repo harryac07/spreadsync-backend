@@ -50,10 +50,13 @@ export const _inviteUserToProject: InviteUserToProject = async (
           user: user.id,
           project: projectId,
           account: account_id,
-          ...adminEmail === eachUser ? {
+          // Add admin permissions to all users for now, until handled properly in UI
+          // When ready in UI, user the one commented below
+          ...true ? {
+            // ...adminEmail === eachUser ? {
             project_role: 'Admin',
             project_permission: 'admin'
-          } : {}
+          } : {},
         },
         trx,
       );
