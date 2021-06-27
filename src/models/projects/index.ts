@@ -94,10 +94,21 @@ const getAllJobsByProjectId = (projectId: string): Promise<JobListWithProject> =
     });
 };
 
+const getAllProjectTeamMembers = async (projectId: string) => {
+  return db('user_involvement as u')
+    .select(
+      'u.*',
+      'user.email',
+    )
+    .leftJoin('user as user', 'user.id', 'u.user')
+    .where('u.project', '=', projectId);
+};
+
 export default {
   createProject,
   getAllProjects,
   getProjectById,
   getAllProjectsWithOtherRelations,
   getAllJobsByProjectId,
+  getAllProjectTeamMembers
 };

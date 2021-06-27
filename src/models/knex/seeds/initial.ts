@@ -192,13 +192,23 @@ exports.seed = async (knex: knex) => {
         description: 'All permission to project (CRUD) including jobs',
       },
       {
-        id: '4b44afc8-5205-49c1-af26-4dc6f96db982',
-        name: 'jobs_read',
+        id: '9a44afc8-5205-49c1-af26-4dc6f96db982',
+        name: 'job_read',
         description: 'Read only to jobs',
       },
       {
+        id: '9b44afc8-5205-49c1-af26-4dc6f96db982',
+        name: 'job_write',
+        description: 'Can create jobs',
+      },
+      {
+        id: '9c44afc8-5205-49c1-af26-4dc6f96db982',
+        name: 'job_delete',
+        description: 'Can delete jobs',
+      },
+      {
         id: '4b45afc8-5205-49c1-af26-4dc6f96db982',
-        name: 'jobs_all',
+        name: 'job_alls',
         description: 'All permission to jobs (CRUD)',
       },
       {
@@ -223,7 +233,7 @@ exports.seed = async (knex: knex) => {
       },
       {
         id: '4b50afc8-5205-49c1-af26-4dc6f96db982',
-        name: 'super',
+        name: 'admin',
         description: 'Admin permission',
       },
     ]);
@@ -235,16 +245,16 @@ exports.seed = async (knex: knex) => {
         user: '4b36afc8-5205-49c1-af16-4dc6f96db982',
         project: '4b36afc8-5205-49c1-af26-4dc6f26db982',
         account: '4b36afc8-5205-49c1-af16-4d76f96db982',
-        project_role: '4b36afc8-5205-49c1-af26-1dc6f96db982',
-        project_permission: '4b50afc8-5205-49c1-af26-4dc6f96db982',
+        project_role: 'Admin',
+        project_permission: 'admin',
       },
       {
         id: '4b52afc8-5205-49c1-af26-4dc6f96db982',
         user: '4b36afc8-5205-49c1-af16-4dc6f96db980',
         project: '4b36afc8-5205-49c1-af26-4dc6f27db982',
         account: '4b36afc8-5205-49c1-af16-4dc6f96db782',
-        project_role: '4b36afc8-5205-49c1-af26-1dc6f96db982',
-        project_permission: '4b50afc8-5205-49c1-af26-4dc6f96db982',
+        project_role: 'Developer',
+        project_permission: 'project_all,job_read',
       },
     ]);
     await knex.raw(`COMMIT`);

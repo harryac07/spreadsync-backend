@@ -105,17 +105,18 @@ const trackUserAuthToken = async (payload: UserAuth): Promise<void> => {
  */
 const getAllAccountsForUser = (user_id: string): Promise<Array<Account & { user: string }>> => {
   return db('account')
-    .select('account.*', 'user.id as user')
+    .select('account.*', 'user.id as user', 'user.email as email')
     .from('account')
     .innerJoin('user', 'user.id', 'account.admin')
     .where({
       admin: user_id,
     })
     .union(function () {
-      this.select('account.*', 'i.user')
+      this.select('account.*', 'i.user', 'user.email as email')
         .distinct()
         .from('user_involvement AS i')
         .innerJoin('account', 'account.id', 'i.account')
+        .innerJoin('user', 'user.id', 'account.admin')
         .where({
           user: user_id,
         });

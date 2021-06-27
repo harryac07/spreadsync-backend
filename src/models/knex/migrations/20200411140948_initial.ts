@@ -225,8 +225,8 @@ export const up = async (knex: Knex) => {
       "user" UUID REFERENCES "user"(id),
       project UUID REFERENCES project(id),
       account UUID REFERENCES account(id),
-      project_role UUID REFERENCES user_role(id),
-      project_permission UUID REFERENCES user_permission(id)
+      project_role text,
+      project_permission text
     );
 
     CREATE TABLE IF NOT EXISTS history.user_involvement_history(
@@ -234,8 +234,8 @@ export const up = async (knex: Knex) => {
       "user" UUID REFERENCES "user"(id),
       project UUID REFERENCES project(id),
       account UUID REFERENCES account(id),
-      project_role UUID REFERENCES user_role(id),
-      project_permission UUID REFERENCES user_permission(id),
+      project_role text,
+      project_permission text,
       created_on TIMESTAMP NOT NULL DEFAULT NOW()
     );
 

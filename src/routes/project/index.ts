@@ -8,6 +8,7 @@ router.get('/', checkAuth, projectController.getAllProjects);
 router.post('/', checkAuth, projectController.createProject);
 router.get('/:id', checkAuth, projectController.getProjectById);
 router.get('/:id/jobs', checkAuth, projectController.getAllJobsForProject);
+router.get('/:id/teams', checkAuth, projectController.getAllProjectTeamMembers);
 export {
   router
 };

@@ -13,13 +13,15 @@ type InviteUserToProject = (
   projectId: string,
   projectName: string,
   invitedUsers: string[],
+  adminEmail: string,
 ) => Promise<void>;
 
 export const _inviteUserToProject: InviteUserToProject = async (
-  account_id: string,
-  projectId: string,
-  projectName: string,
-  invitedUsers: string[],
+  account_id,
+  projectId,
+  projectName,
+  invitedUsers,
+  adminEmail,
 ) => {
   /*  Invite users by sending invitation email */
 
@@ -48,6 +50,10 @@ export const _inviteUserToProject: InviteUserToProject = async (
           user: user.id,
           project: projectId,
           account: account_id,
+          ...adminEmail === eachUser ? {
+            project_role: 'Admin',
+            project_permission: 'admin'
+          } : {}
         },
         trx,
       );
@@ -56,10 +62,13 @@ export const _inviteUserToProject: InviteUserToProject = async (
         email: eachUser,
       });
       if (userExists) {
-        await notifyUserForProjectInvitation({
-          email: eachUser,
-          project: projectName,
-        });
+        /* AdminEmail is the one who is creating the project. No need to send invitation email to admin */
+        if (adminEmail !== eachUser) {
+          await notifyUserForProjectInvitation({
+            email: eachUser,
+            project: projectName,
+          });
+        }
       } else {
         await sendInvitationEmailToUser({
           email: eachUser,
@@ -72,7 +81,7 @@ export const _inviteUserToProject: InviteUserToProject = async (
 };
 const createProject = async (req, res, next) => {
   try {
-    const { id } = req.locals.user;
+    const { id, email } = req.locals.user;
     const { account_id } = req.headers;
     if (!account_id) {
       throw new Error('Account id is required!');
@@ -90,7 +99,8 @@ const createProject = async (req, res, next) => {
       account_id,
       projectResponse[0].id,
       projectResponse[0].name,
-      invitedUsers,
+      [email, ...invitedUsers],
+      email
     );
 
     res.status(200).json(projectResponse);
@@ -134,9 +144,20 @@ const getAllJobsForProject = async (req, res, next) => {
   }
 };
 
+const getAllProjectTeamMembers = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const projectMembers = await Project.getAllProjectTeamMembers(id);
+    res.status(200).json(projectMembers);
+  } catch (e) {
+    next(e);
+  }
+}
+
 export {
   createProject,
   getAllProjects,
   getProjectById,
   getAllJobsForProject,
+  getAllProjectTeamMembers,
 };
