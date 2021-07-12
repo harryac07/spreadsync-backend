@@ -12,7 +12,7 @@ type InviteUserToProject = (
   account_id: string,
   projectId: string,
   projectName: string,
-  invitedUsers: string[],
+  invitedUsers: any[],
   adminEmail: string,
 ) => Promise<void>;
 
@@ -27,8 +27,9 @@ export const _inviteUserToProject: InviteUserToProject = async (
 
   await dbClient.transaction(async (trx) => {
     for (const eachUser of invitedUsers) {
+      const { email, permission } = eachUser;
       // check if user exists already in the system
-      const userCheckRes = await User.getUserByEmail(eachUser);
+      const userCheckRes = await User.getUserByEmail(email);
       const userExists = userCheckRes[0];
       let user = userExists;
 
@@ -36,7 +37,7 @@ export const _inviteUserToProject: InviteUserToProject = async (
         // create user with inactive status
         const userRes = await User.createUser(
           {
-            email: eachUser,
+            email,
             password: 'temp password',
           },
           trx,
@@ -50,33 +51,33 @@ export const _inviteUserToProject: InviteUserToProject = async (
           user: user.id,
           project: projectId,
           account: account_id,
-          // Add admin permissions to all users for now, until handled properly in UI
-          // When ready in UI, user the one commented below
-          ...true ? {
-            // ...adminEmail === eachUser ? {
+          ...adminEmail === email ? {
             project_role: 'Admin',
             project_permission: 'admin'
-          } : {},
+          } : {
+            project_role: 'Developer',
+            project_permission: permission?.length ? permission.join(',') : ''
+          },
         },
         trx,
       );
       const token = generateInvitationToken({
         account_id,
-        email: eachUser,
+        email,
       });
       if (userExists) {
         /* AdminEmail is the one who is creating the project. No need to send invitation email to admin */
-        if (adminEmail !== eachUser) {
+        if (adminEmail !== email) {
           await notifyUserForProjectInvitation({
-            email: eachUser,
+            email,
             project: projectName,
           });
         }
       } else {
         await sendInvitationEmailToUser({
-          email: eachUser,
-          project: projectName,
+          email,
           token,
+          project: projectName
         });
       }
     }
@@ -98,14 +99,6 @@ const createProject = async (req, res, next) => {
       admin: id,
       account: account_id,
     });
-    await _inviteUserToProject(
-      account_id,
-      projectResponse[0].id,
-      projectResponse[0].name,
-      [email, ...invitedUsers],
-      email
-    );
-
     res.status(200).json(projectResponse);
   } catch (e) {
     next(e);
@@ -157,10 +150,40 @@ const getAllProjectTeamMembers = async (req, res, next) => {
   }
 }
 
+const inviteProjectTeamMembers = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { email } = req.locals.user;
+    const payload: {
+      accountId: string,
+      projectName: string,
+      invitedUsers: string[],
+      projectId?: string;
+    } = req.body;
+
+    if (!payload?.accountId || id === 'undefined') {
+      throw new Error('Account id and project id is required');
+    }
+
+    await _inviteUserToProject(
+      payload?.accountId,
+      id,
+      payload?.projectName,
+      payload?.invitedUsers ?? [],
+      email // admin email
+    );
+
+    res.status(200).json({ message: 'Invitation sent successfully' });
+  } catch (e) {
+    next(e);
+  }
+}
+
 export {
   createProject,
   getAllProjects,
   getProjectById,
   getAllJobsForProject,
   getAllProjectTeamMembers,
+  inviteProjectTeamMembers,
 };
