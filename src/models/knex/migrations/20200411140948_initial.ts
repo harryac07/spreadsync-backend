@@ -226,7 +226,8 @@ export const up = async (knex: Knex) => {
       project UUID REFERENCES project(id),
       account UUID REFERENCES account(id),
       project_role text,
-      project_permission text
+      project_permission text,
+      UNIQUE ("user", project, account)
     );
 
     CREATE TABLE IF NOT EXISTS history.user_involvement_history(
