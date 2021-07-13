@@ -188,6 +188,26 @@ const inviteProjectTeamMembers = async (req, res, next) => {
   }
 }
 
+const removeProjectTeamMember = async (req, res, next) => {
+  try {
+    const { id, user_involvement_id } = req.params;
+    const { email } = req.locals.user;
+
+    if (!user_involvement_id || id === 'undefined') {
+      throw new Error('Project id is required');
+    }
+    if (!email) {
+      throw new Error('Authentication error!');
+    }
+
+    await User.removeProjectInvolvementById(user_involvement_id);
+
+    res.status(200).json({ message: 'User involvement removed successfully' });
+  } catch (e) {
+    next(e);
+  }
+}
+
 export {
   createProject,
   getAllProjects,
@@ -195,4 +215,5 @@ export {
   getAllJobsForProject,
   getAllProjectTeamMembers,
   inviteProjectTeamMembers,
+  removeProjectTeamMember,
 };

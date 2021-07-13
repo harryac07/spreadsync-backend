@@ -89,6 +89,21 @@ const createProjectInvolvement = (payload: UserInvolvementPayload, dbTrx: Knex =
   return dbTrx('user_involvement').insert(payload).returning('*');
 };
 
+const removeProjectInvolvementById = async (id: string) => {
+  return db.transaction(async (trx: Knex) => {
+    await trx('history.user_involvement_history')
+      .where({
+        user_involvement: id,
+      })
+      .del();
+    await trx('user_involvement')
+      .where({
+        id,
+      })
+      .del();
+  });
+}
+
 /**
  * trackUserAuthToken
  * @param {Object}payload - payload to store in database
@@ -160,4 +175,5 @@ export default {
   hashPassword,
   isValidPassword,
   createProjectInvolvement,
+  removeProjectInvolvementById,
 };
