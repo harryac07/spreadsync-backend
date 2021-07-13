@@ -12,7 +12,7 @@ type InviteUserToProject = (
   account_id: string,
   projectId: string,
   projectName: string,
-  invitedUsers: any[],
+  invitedUsers: { email?: string, permission?: string }[],
   adminEmail: string,
 ) => Promise<void>;
 
@@ -27,7 +27,7 @@ export const _inviteUserToProject: InviteUserToProject = async (
 
   await dbClient.transaction(async (trx) => {
     for (const eachUser of invitedUsers) {
-      const { email, permission } = eachUser;
+      const { email = "", permission = [] } = eachUser as any;
       // check if user exists already in the system
       const userCheckRes = await User.getUserByEmail(email);
       const userExists = userCheckRes[0];
@@ -56,7 +56,7 @@ export const _inviteUserToProject: InviteUserToProject = async (
             project_permission: 'admin'
           } : {
             project_role: 'Developer',
-            project_permission: permission?.length ? permission.join(',') : ''
+            project_permission: permission?.length ? permission?.join(',') : ''
           },
         },
         trx,
@@ -99,6 +99,15 @@ const createProject = async (req, res, next) => {
       admin: id,
       account: account_id,
     });
+
+    await _inviteUserToProject(
+      account_id,
+      projectResponse[0].id,
+      projectResponse[0].name,
+      [{ email }],
+      email
+    );
+
     res.status(200).json(projectResponse);
   } catch (e) {
     next(e);
@@ -157,7 +166,7 @@ const inviteProjectTeamMembers = async (req, res, next) => {
     const payload: {
       accountId: string,
       projectName: string,
-      invitedUsers: string[],
+      invitedUsers: any[],
       projectId?: string;
     } = req.body;
 
