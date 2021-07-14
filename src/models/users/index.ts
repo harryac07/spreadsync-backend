@@ -104,6 +104,18 @@ const removeProjectInvolvementById = async (id: string) => {
   });
 }
 
+const getPermissionForUserByAccountId = async (userId: string, accountId: string): Promise<UserInvolvement[]> => {
+  if (!accountId || !userId) {
+    return Promise.resolve([])
+  }
+  return db('user_involvement')
+    .select('project_permission')
+    .where({
+      user: userId,
+      account: accountId,
+    })
+}
+
 const updateProjectTeamMember = async (id: string, reqPayload: Pick<UserInvolvement, 'project_permission'>): Promise<UserInvolvement[]> => {
   return db('user_involvement').update(reqPayload).where({ id }).returning('*');
 }
@@ -180,5 +192,6 @@ export default {
   isValidPassword,
   createProjectInvolvement,
   removeProjectInvolvementById,
-  updateProjectTeamMember
+  updateProjectTeamMember,
+  getPermissionForUserByAccountId,
 };
