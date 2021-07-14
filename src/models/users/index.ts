@@ -104,6 +104,10 @@ const removeProjectInvolvementById = async (id: string) => {
   });
 }
 
+const updateProjectTeamMember = async (id: string, reqPayload: Pick<UserInvolvement, 'project_permission'>): Promise<UserInvolvement[]> => {
+  return db('user_involvement').update(reqPayload).where({ id }).returning('*');
+}
+
 /**
  * trackUserAuthToken
  * @param {Object}payload - payload to store in database
@@ -176,4 +180,5 @@ export default {
   isValidPassword,
   createProjectInvolvement,
   removeProjectInvolvementById,
+  updateProjectTeamMember
 };

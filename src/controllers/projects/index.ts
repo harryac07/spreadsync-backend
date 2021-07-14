@@ -208,6 +208,31 @@ const removeProjectTeamMember = async (req, res, next) => {
   }
 }
 
+const updateProjectTeamMember = async (req, res, next) => {
+  try {
+    const { id, user_involvement_id } = req.params;
+    const { email } = req.locals.user;
+    const permissionList = req.body?.permission ?? [];
+
+    const payload = {
+      project_permission: permissionList?.length ? permissionList?.join(',') : ''
+    }
+
+    if (!user_involvement_id || id === 'undefined') {
+      throw new Error('Project id is required');
+    }
+    if (!email) {
+      throw new Error('Authentication error!');
+    }
+
+    await User.updateProjectTeamMember(user_involvement_id, payload);
+
+    res.status(200).json({ message: 'User involvement updated successfully' });
+  } catch (e) {
+    next(e);
+  }
+}
+
 export {
   createProject,
   getAllProjects,
@@ -216,4 +241,5 @@ export {
   getAllProjectTeamMembers,
   inviteProjectTeamMembers,
   removeProjectTeamMember,
+  updateProjectTeamMember
 };
