@@ -40,6 +40,7 @@
     "lodash": "^4.17.20",
     "moment": "^2.26.0",
     "morgan": "^1.9.1",
+    "node-cache": "^5.1.2",
     "nodemailer": "^6.4.8",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",

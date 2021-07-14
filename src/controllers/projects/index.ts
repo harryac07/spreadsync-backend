@@ -1,6 +1,7 @@
 import dbClient from '../../models/db';
 import { Project, User } from '../../models';
 import { Project as ProjectTypes, ProjectWithRelations, JobListWithProject } from 'src/types';
+import cache from '../../util/nodeCache';
 import {
   sendInvitationEmailToUser,
   notifyUserForProjectInvitation,
@@ -211,7 +212,7 @@ const removeProjectTeamMember = async (req, res, next) => {
 const updateProjectTeamMember = async (req, res, next) => {
   try {
     const { id, user_involvement_id } = req.params;
-    const { email } = req.locals.user;
+    const { email, id: userId } = req.locals.user;
     const permissionList = req.body?.permission ?? [];
 
     const payload = {
@@ -224,8 +225,9 @@ const updateProjectTeamMember = async (req, res, next) => {
     if (!email) {
       throw new Error('Authentication error!');
     }
-
     await User.updateProjectTeamMember(user_involvement_id, payload);
+    const cacheKey = `getPermissionForUserByAccountId-${userId}`;
+    cache.del([cacheKey]);
 
     res.status(200).json({ message: 'User involvement updated successfully' });
   } catch (e) {

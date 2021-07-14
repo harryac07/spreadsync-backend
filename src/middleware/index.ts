@@ -1,6 +1,7 @@
 import passport from 'passport';
-import { intersection } from 'lodash';
+import { intersection, flatten } from 'lodash';
 import { User } from '../models';
+import cache from '../util/nodeCache';
 
 const checkAuth = (req, res, next) => {
   passport.authenticate('jwt', { session: false }, async (err, token) => {
@@ -11,17 +12,30 @@ const checkAuth = (req, res, next) => {
       if (!token) {
         throw new Error('Invalid token. Authentication failed!');
       }
+      const userId = token.id;
       const accountId = req.headers?.account_id;
-      let permissions = [] as string[];
+      let permissions: any[] = [];
+      let userInvolvements: any[] = [];
+      const cacheKey = `getPermissionForUserByAccountId-${userId}`;
 
       if (accountId) {
-        const userInvolvements = await User.getPermissionForUserByAccountId(token.id, req.headers?.account_id);
-        const uniquePermissions = new Set(userInvolvements?.map(({ project_permission }) => project_permission));
-        permissions = Array.from(uniquePermissions)
+        userInvolvements = await cache.getOrSet(cacheKey, () => User.getPermissionForUserByAccountId(userId, accountId));
+      } else {
+        userInvolvements = await cache.get(cacheKey) || [];
       }
+
+      const uniquePermissions = new Set(
+        flatten(
+          userInvolvements?.map(({ project_permission }) => project_permission?.split(','))
+        )
+      );
+
+      permissions = Array.from(uniquePermissions)
+
       req.locals = {};
       req.locals.user = token;
       req.locals.user.permissions = permissions;
+      req.locals.user.account = accountId;
       next();
     } catch (e) {
       console.error('error ', e.stack);
