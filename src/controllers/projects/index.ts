@@ -117,12 +117,13 @@ const createProject = async (req, res, next) => {
 
 const getAllProjects = async (req, res, next) => {
   try {
+    const { id } = req.locals.user;
     const { account_id } = req.headers;
 
     if (!account_id) {
       throw new Error('Account id is required!');
     }
-    const filters = { account_id, permitted_only: true };
+    const filters = { account_id, permitted_only: true, user: id };
     const projects: ProjectWithRelations[] = await Project.getAllProjectsWithOtherRelations(filters);
     res.status(200).json(projects);
   } catch (e) {

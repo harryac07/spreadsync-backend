@@ -27,7 +27,7 @@ const getAllProjects = async (filterObj: { account_id?: string } = {}): Promise<
  * @param {Object}filterObj - Filter object pattern object_columnName (Eg. user_id)
  * @returns {Array}
  */
-const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string, permitted_only?: boolean }): Promise<ProjectWithRelations[]> => {
+const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string, permitted_only?: boolean, user?: string }): Promise<ProjectWithRelations[]> => {
   return db('project')
     .select(
       'project.*',
@@ -40,12 +40,13 @@ const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string
         (
           SELECT
             u.project,
-            COUNT(*) as count
+            u.user,
+            (select count(*) from user_involvement ui where ui.project =u.project) as count
           FROM user_involvement u
           WHERE
             u.project_permission ilike '%admin%' or
             u.project_permission ilike '%project%'
-          GROUP BY u.project
+          GROUP BY u.project, u.user
         ) i
         ON i.project = project.id
       `),
@@ -56,6 +57,8 @@ const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string
       // Allow the project access in UI only if the user has project_* permission exists
       if (filterObj.permitted_only)
         builder.where('i.count', '>', 0);
+      if (filterObj.user)
+        builder.where('i.user', filterObj.user);
     });
 };
 

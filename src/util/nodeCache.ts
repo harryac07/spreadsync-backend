@@ -21,7 +21,6 @@ class Cache {
 
   get(key: string) {
     const value = this.cache.get(key);
-    console.log('value ', value, key);
     return Promise.resolve(value || null);
   }
 
