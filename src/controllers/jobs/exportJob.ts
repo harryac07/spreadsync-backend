@@ -27,6 +27,28 @@ class ExportJob {
     return sheetRowsResponse;
   }
 
+  getFormattedSQLDataByClient(client: string, dbResponse: any) {
+    switch (client?.toLowerCase()) {
+      case 'mysql':
+        return JSON.parse(JSON.stringify(dbResponse[0]))
+      case 'postgresql':
+        return dbResponse?.rows ?? []
+      default:
+        return dbResponse?.rows ?? []
+    }
+  }
+
+  getColumnHeadersFromSQLByClient(client: string, dbResponse: any) {
+    switch (client?.toLowerCase()) {
+      case 'mysql':
+        return JSON.parse(JSON.stringify(dbResponse[1]))?.map(({ name }) => name)
+      case 'postgresql':
+        return dbResponse?.fields?.map(({ name }) => name)
+      default:
+        return []
+    }
+  }
+
   async getJobById() {
     const [job] = await Job.getJobById(this.jobId);
     return job;
@@ -132,8 +154,7 @@ class ExportJob {
     const data = await db.raw(`
       SELECT * FROM ${tableName} WHERE FALSE;
     `);
-    const tableColumns = data?.fields?.map(({ name }) => name);
-    const columnHeader = tableColumns;
+    const columnHeader = this.getColumnHeadersFromSQLByClient(config?.database_type, data);
 
     /* Get rows from sheet */
     const sheetData: any[] = await this.getDataFromSheet('source');
@@ -161,8 +182,10 @@ class ExportJob {
   async _exportFromDatabaseToDatabase() {
     /* Run script to get data from DB */
     const { db: sourceDB, config: sourceConfig } = await ClientDBSource.init(this.jobId, 'source');
+
     const dbResponse = await sourceDB.raw(`${sourceConfig.script}`);
-    const dataToExport = dbResponse?.rows;
+    const dataToExport = this.getFormattedSQLDataByClient(sourceConfig?.database_type, dbResponse);
+
     if (!dataToExport?.length) {
       throw new Error('No data to export!');
     }
@@ -184,7 +207,8 @@ class ExportJob {
     /* Run script to get data from DB */
     const { db, config } = await ClientDBSource.init(this.jobId, 'source');
     const dbResponse = await db.raw(`${config.script}`);
-    const dataRows = dbResponse?.rows;
+    const dataRows = this.getFormattedSQLDataByClient(config?.database_type, dbResponse);
+
     if (!dataRows?.length) {
       throw new Error('No data to export!');
     }

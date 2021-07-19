@@ -37,6 +37,7 @@ class DatabaseSource {
       client: dataSource?.database_type?.toLowerCase(),
       connection: {
         host: dataSource?.database_host,
+        port: +dataSource?.database_port,
         user: dataSource?.database_user,
         password: dataSource?.database_password,
         database: dataSource?.database_name

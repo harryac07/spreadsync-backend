@@ -271,8 +271,9 @@ const listAllDatabaseTable = async (req, res, next) => {
     let dbInstance;
     let databaseTable: any = [];
     try {
+      const databaseClient = jobDataSource?.database_type?.toLowerCase();
       dbInstance = await knex({
-        client: jobDataSource?.database_type?.toLowerCase(),
+        client: databaseClient,
         connection: {
           host: jobDataSource?.database_host,
           port: +jobDataSource?.database_port,
@@ -281,14 +282,36 @@ const listAllDatabaseTable = async (req, res, next) => {
           database: jobDataSource?.database_name
         }
       });
-      databaseTable = await dbInstance.raw(`
-        SELECT
-          table_schema||'.'||table_name AS tablename
-        FROM information_schema.tables
-        WHERE table_type ='BASE TABLE'
-          AND table_schema not in ('pg_catalog', 'information_schema')
-        ORDER BY table_schema;
-      `);
+      switch (databaseClient) {
+        case 'postgresql':
+          databaseTable = await dbInstance.raw(`
+            SELECT
+              table_schema||'.'||table_name AS tablename
+            FROM information_schema.tables
+            WHERE table_type ='BASE TABLE'
+              AND table_schema not in ('pg_catalog', 'information_schema')
+              AND table_schema = '${jobDataSource?.database_name}'
+            ORDER BY table_schema;
+          `);
+          break;
+        case 'mysql':
+          const [tableData] = await dbInstance.raw(`
+            SELECT 
+              table_name AS tablename 
+            FROM information_schema.tables
+            WHERE table_type ='BASE TABLE'
+              AND table_schema not in ('information_schema')
+              AND table_schema = '${jobDataSource?.database_name}'
+            ORDER BY table_schema;
+          `);
+          databaseTable = {
+            rows: tableData
+          }
+          break;
+        default:
+          databaseTable = databaseTable;
+      }
+      console.log('databaseTable ', JSON.stringify(databaseTable))
     } finally {
       if (dbInstance) {
         await dbInstance.destroy();
