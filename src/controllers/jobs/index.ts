@@ -242,9 +242,10 @@ const checkDatabaseConnectionByJobId = async (req, res, next) => {
         client: jobDataSource?.database_type?.toLowerCase(),
         connection: {
           host: jobDataSource?.database_host,
+          port: +jobDataSource?.database_port,
           user: jobDataSource?.database_user,
           password: jobDataSource?.database_password,
-          database: jobDataSource?.database_name
+          database: jobDataSource?.database_name,
         }
       });
       await dbInstance.raw(`SELECT 1`);
@@ -274,6 +275,7 @@ const listAllDatabaseTable = async (req, res, next) => {
         client: jobDataSource?.database_type?.toLowerCase(),
         connection: {
           host: jobDataSource?.database_host,
+          port: +jobDataSource?.database_port,
           user: jobDataSource?.database_user,
           password: jobDataSource?.database_password,
           database: jobDataSource?.database_name
