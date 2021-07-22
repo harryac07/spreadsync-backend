@@ -7,6 +7,7 @@ const router = express.Router();
 router.post('/', checkAuth, jobController.createJob);
 router.get('/project/:id', checkAuth, jobController.getJobByProjectId);
 router.get('/:id', checkAuth, jobController.getJobById);
+router.post('/:id/clone', checkAuth, jobController.cloneJobById);
 router.patch('/:id', checkAuth, jobController.updateJob);
 router.delete('/:id', checkAuth, jobController.deleteJobById);
 router.get('/:id/datasource', checkAuth, jobController.getJobDataSource);

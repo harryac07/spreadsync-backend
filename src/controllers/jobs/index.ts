@@ -39,6 +39,22 @@ const createJob = async (req, res, next) => {
     next(e);
   }
 };
+
+const cloneJobById = async (req, res, next) => {
+  try {
+    const { id: jobId } = req.params;
+    const { id: userId } = req.locals?.user;
+
+    if (!jobId) {
+      throw new Error('Job id is required!');
+    }
+    // Clone job
+    await Job.cloneJobByJobId(jobId, { userId });
+    res.status(200).json({ data: 'Job cloned successfully!' });
+  } catch (e) {
+    next(e);
+  }
+}
 const getAllJobs = async (req, res, next) => {
   try {
     const { account_id } = req.headers;
@@ -423,5 +439,5 @@ const exportJobFromDatabaseToSpreadsheet = async (req, res, next) => {
 }
 
 export {
-  getJobById, getJobByProjectId, createJob, updateJob, deleteJobById, createDataSource, getJobDataSource, getDataSourceByDatasourceId, updateDataSource, checkDatabaseConnectionByJobId, listAllDatabaseTable, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, exportJobFromDatabaseToSpreadsheet,
+  getJobById, getJobByProjectId, createJob, cloneJobById, updateJob, deleteJobById, createDataSource, getJobDataSource, getDataSourceByDatasourceId, updateDataSource, checkDatabaseConnectionByJobId, listAllDatabaseTable, createSpreadSheetConfigForJob, getSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, exportJobFromDatabaseToSpreadsheet,
 }
