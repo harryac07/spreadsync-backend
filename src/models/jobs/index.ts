@@ -100,6 +100,7 @@ const deleteJobWithAllRelations = async (jobId: string): Promise<any> => {
     await trx('source_database').where('job', jobId).del();
     await trx('spreadsheet_config').where('job_id', jobId).del();
     await trx('social_auth').where('job_id', jobId).del();
+    await trx('api_config').where('job_id', jobId).del();
     await trx('job').where('id', jobId).del();
   });
 };
