@@ -63,6 +63,35 @@ const updateUserById = async (req, res, next) => {
   }
 };
 
+const updateUserPassword = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { email, password, new_password, repeated_new_password } = req.body;
+
+    const validate = await User.isValidPassword(email, password);
+    if (!validate) {
+      throw new Error('Original password incorrect!');
+    }
+
+    if (new_password !== repeated_new_password) {
+      throw new Error('Password unmatched!');
+    }
+    if (password === new_password) {
+      res.status(200).json({ data: 'Same password provided!' });
+      return;
+    }
+
+    // hash the provided password
+    const hashPassword = await User.hashPassword(new_password);
+    // Update new password
+    await User.updateUserById(id, { password: hashPassword },);
+
+    res.status(200).json({ data: 'Password updated successfully!' });
+  } catch (e) {
+    next(e);
+  }
+}
+
 const getAllAccountsForUser = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -78,5 +107,6 @@ export {
   getAllUsers,
   getUserById,
   updateUserById,
+  updateUserPassword,
   getAllAccountsForUser,
 };

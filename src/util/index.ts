@@ -137,7 +137,7 @@ const sendEmailConfirmationEmail = async ({ email, firstname, token }) => {
           <td>
             <h3>Hello ${firstname},</h3>
             <p>
-              Thank you for signing up in Spreadsync! Now, just one more step to go.
+              Thank you for being part of Spreadsync! Now, just one more step to go.
             </p>
             <p>
               Please select the confirm button to verify your email account.
