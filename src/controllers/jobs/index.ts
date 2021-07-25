@@ -1,5 +1,6 @@
 import knex from 'knex';
 import { Job } from '../../models';
+import db from '../../models/db';
 import ExportJob from './exportJob';
 import { Job as JobTypes, CreateJobPayload, DataSource } from 'src/types';
 
@@ -132,8 +133,62 @@ const updateJob = async (req, res, next) => {
       ...dataSourceCompletedState,
       ...dataTargetCompletedState
     }
-    const job: JobTypes[] = await Job.updateJobDetail(id, updateJobPayload);
-    res.status(200).json(job);
+
+    const [job]: JobTypes[] = await Job.getJobById(id);
+    const isSourceOrTargetChanged = job?.data_source !== updateJobPayload?.data_source || job?.data_target !== updateJobPayload?.data_target;
+
+    if (!isSourceOrTargetChanged) {
+      await Job.updateJobDetail(id, updateJobPayload);
+      res.status(200).json('job');
+      return;
+    }
+
+    let sourceOrTargetStatus = {};
+    await db.transaction(async (trx) => {
+      if (job?.data_source !== updateJobPayload?.data_source) {
+        sourceOrTargetStatus = {
+          ...sourceOrTargetStatus,
+          is_data_source_configured: false
+        };
+        // delete data source
+        switch (job?.data_source) {
+          case 'api':
+            await Job.deleteApiConfigForJob(id, 'source', trx);
+            break;
+          case 'database':
+            await Job.deleteDatabaseConfigForJob(id, 'source', trx);
+            break;
+          case 'spreadsheet':
+            await Job.deleteSpreadsheetConfigForJob(id, 'source', trx);
+            break;
+          default:
+            throw new Error('Data source invalid!')
+
+        }
+      }
+      if (job?.data_target !== updateJobPayload?.data_target) {
+        sourceOrTargetStatus = {
+          ...sourceOrTargetStatus,
+          is_data_target_configured: false
+        };
+        // delete data target
+        switch (job?.data_target) {
+          case 'api':
+            await Job.deleteApiConfigForJob(id, 'target', trx);
+            break;
+          case 'database':
+            await Job.deleteDatabaseConfigForJob(id, 'target', trx);
+            break;
+          case 'spreadsheet':
+            await Job.deleteSpreadsheetConfigForJob(id, 'target', trx);
+            break;
+          default:
+            throw new Error('Data target invalid!')
+        }
+      }
+      await Job.updateJobDetail(id, { ...updateJobPayload, ...sourceOrTargetStatus }, trx);
+    });
+    res.status(200).json('job');
   } catch (e) {
     next(e);
   }

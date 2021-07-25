@@ -66,8 +66,8 @@ const cloneJobByJobId = async (jobId: string, reqPayload: { userId?: string }): 
     await trx('spreadsheet_config').insert(spreadsheetConfigToBeCloned);
   })
 };
-const updateJobDetail = async (jobId: string, reqPayload: any): Promise<Job[]> => {
-  return db('job').update(reqPayload)
+const updateJobDetail = async (jobId: string, reqPayload: any, trx = db): Promise<Job[]> => {
+  return trx('job').update(reqPayload)
     .where({ id: jobId })
     .returning('*');
 };
@@ -103,6 +103,40 @@ const deleteJobWithAllRelations = async (jobId: string): Promise<any> => {
     await trx('api_config').where('job_id', jobId).del();
     await trx('job').where('id', jobId).del();
   });
+};
+
+const deleteApiConfigForJob = async (jobId: string, reqType: 'source' | 'target', trx = db): Promise<any> => {
+  if (!jobId) {
+    throw new Error('Job id is required!');
+  }
+  const filter = {
+    job_id: jobId,
+    ...reqType ? { type: reqType } : {}
+  }
+  await trx('api_config').where(filter).del();
+};
+
+const deleteDatabaseConfigForJob = async (jobId: string, reqType: 'source' | 'target', trx = db): Promise<any> => {
+  if (!jobId) {
+    throw new Error('Job id is required!');
+  }
+  const filter = {
+    job: jobId,
+    ...reqType ? { data_type: reqType } : {}
+  }
+  await trx('source_database').where(filter).del();
+};
+
+const deleteSpreadsheetConfigForJob = async (jobId: string, reqType: 'source' | 'target', trx = db): Promise<any> => {
+  if (!jobId) {
+    throw new Error('Job id is required!');
+  }
+  const filter = {
+    job_id: jobId,
+    ...reqType ? { type: reqType } : {}
+  }
+  await trx('spreadsheet_config').where(filter).del();
+  await trx('social_auth').where(filter).del();
 };
 
 const getJobByProjectId = async (projectId: string): Promise<Job[]> => {
@@ -164,5 +198,13 @@ const getSpreadSheetConfigForJob = async (jobId: string, filterObj: { type?: 'so
 
 
 export default {
-  getAllJobs, createJob, updateJobDetail, getJobById, deleteJobWithAllRelations, getJobByProjectId, createJobSchedule, updateJobSchedule, createJobDataSource, getJobDataSource, getDataSourceById, updateJobDataSource, createSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, getSpreadSheetConfigForJob, cloneJobByJobId
+  getAllJobs,
+  createJob,
+  updateJobDetail,
+  getJobById,
+  deleteJobWithAllRelations,
+  deleteApiConfigForJob,
+  deleteDatabaseConfigForJob,
+  deleteSpreadsheetConfigForJob,
+  getJobByProjectId, createJobSchedule, updateJobSchedule, createJobDataSource, getJobDataSource, getDataSourceById, updateJobDataSource, createSpreadSheetConfigForJob, updateSpreadSheetConfigForJob, getSpreadSheetConfigForJob, cloneJobByJobId
 }
