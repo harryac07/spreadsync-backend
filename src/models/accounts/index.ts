@@ -16,11 +16,47 @@ const createAccount = (
 };
 
 /**
+ * updateAccount
+ * @param {string}accountId - account id
+ * @param {Object}reqPayload - request payload
+ * @param {Object}dbTrx - databse transaction object
+ * @returns {Array}
+ */
+const updateAccount = (
+  accountId: string,
+  reqPayload: Partial<AccountPayload>,
+  dbTrx: Knex = db
+): Promise<Account[]> => {
+  return dbTrx('account')
+    .where({ id: accountId })
+    .update(reqPayload).returning('*');
+};
+
+/**
+ * deleteAccount
+ * @param {string}accountId - account id
+ * @param {Object}dbTrx - databse transaction object
+ * @returns {Array}
+ */
+const deleteAccount = (
+  accountId: string,
+  dbTrx: Knex = db
+): Promise<Account[]> => {
+  return dbTrx('account')
+    .where({ id: accountId })
+    .del();
+};
+
+/**
  * getAllAccounts
  * @returns {Array}
  */
 const getAllAccounts = async (): Promise<Account[]> => {
   return db('account').select();
+};
+
+const getAccountById = async (accountId: string): Promise<Account[]> => {
+  return db('account').select().where({ id: accountId });
 };
 
 /**
@@ -44,7 +80,10 @@ const getAccountByAccountName = async (
 };
 
 export default {
+  getAccountById,
   createAccount,
+  updateAccount,
+  deleteAccount,
   getAllAccounts,
   getAccountByAccountName,
 };

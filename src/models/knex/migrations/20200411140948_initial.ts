@@ -52,18 +52,18 @@ export const up = async (knex: Knex) => {
 
     CREATE TABLE IF NOT EXISTS subscription(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      plan UUID REFERENCES plan(id),
+      plan UUID REFERENCES plan(id) ON DELETE CASCADE,
       discount int,
-      account UUID REFERENCES account(id),
+      account UUID REFERENCES account(id) ON DELETE CASCADE,
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS history.subscription_history(
-      subscription UUID REFERENCES subscription(id),
-      plan UUID REFERENCES plan(id),
+      subscription UUID REFERENCES subscription(id) ON DELETE CASCADE,
+      plan UUID REFERENCES plan(id) ON DELETE CASCADE,
       discount int,
-      account UUID REFERENCES account(id),
+      account UUID REFERENCES account(id) ON DELETE CASCADE,
       created_on TIMESTAMP
     );
 
@@ -72,7 +72,7 @@ export const up = async (knex: Knex) => {
       name text,
       description text,
       admin UUID REFERENCES "user"(id),
-      account UUID REFERENCES account(id), 
+      account UUID REFERENCES account(id) ON DELETE CASCADE, 
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP
     );
@@ -82,7 +82,7 @@ export const up = async (knex: Knex) => {
       name text,
       description text,
       type text, -- export or sync
-      project UUID REFERENCES project(id),
+      project UUID REFERENCES project(id) ON DELETE CASCADE,
       data_source text,
       data_target text,
       is_data_source_configured boolean DEFAULT false,
@@ -97,7 +97,7 @@ export const up = async (knex: Knex) => {
       name text,
       description text,
       type text, -- export or sync
-      project UUID REFERENCES project(id),
+      project UUID REFERENCES project(id) ON DELETE CASCADE,
       data_source text,
       data_target text,
       is_data_source_configured boolean DEFAULT false,
@@ -108,7 +108,7 @@ export const up = async (knex: Knex) => {
 
     CREATE TABLE IF NOT EXISTS job_schedule(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      job UUID REFERENCES job(id),
+      job UUID REFERENCES job(id) ON DELETE CASCADE,
       frequency_name text, --fixed or scheduled
       value int,
       unit text, --minutes, hours, days, months
@@ -118,7 +118,7 @@ export const up = async (knex: Knex) => {
 
     CREATE TABLE IF NOT EXISTS source_database(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      job UUID REFERENCES job(id),
+      job UUID REFERENCES job(id) ON DELETE CASCADE,
       database_type text,
       is_ssl boolean default false,
       alias_name text,
@@ -141,8 +141,8 @@ export const up = async (knex: Knex) => {
     );
 
     CREATE TABLE IF NOT EXISTS history.job_schedule_history(
-      job_schedule UUID REFERENCES job_schedule(id),
-      job UUID REFERENCES job(id),
+      job_schedule UUID REFERENCES job_schedule(id) ON DELETE CASCADE,
+      job UUID REFERENCES job(id) ON DELETE CASCADE,
       frequency_name text,
       value text,
       unit text,
@@ -152,7 +152,7 @@ export const up = async (knex: Knex) => {
     CREATE TABLE IF NOT EXISTS social_auth(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       user_id UUID REFERENCES "user"(id),
-      job_id UUID REFERENCES job(id),
+      job_id UUID REFERENCES job(id) ON DELETE CASCADE,
       type text, --target or source
       social_name text, --google
       token_type text,
@@ -168,7 +168,7 @@ export const up = async (knex: Knex) => {
     CREATE TABLE IF NOT EXISTS spreadsheet_config(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       user_id UUID REFERENCES "user"(id),
-      job_id UUID REFERENCES job(id),
+      job_id UUID REFERENCES job(id) ON DELETE CASCADE,
       spreadsheet_id text,
       spreadsheet_name text,
       sheet text,
@@ -183,7 +183,7 @@ export const up = async (knex: Knex) => {
 
     CREATE TABLE IF NOT EXISTS api_config(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),      
-      job_id UUID REFERENCES job(id),
+      job_id UUID REFERENCES job(id) ON DELETE CASCADE,
       method text,
       endpoint text,
       params text,
@@ -198,8 +198,8 @@ export const up = async (knex: Knex) => {
     CREATE TABLE IF NOT EXISTS payment(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       "user" UUID REFERENCES "user"(id),
-      subscription UUID REFERENCES subscription(id),
-      account UUID REFERENCES account(id),
+      subscription UUID REFERENCES subscription(id) ON DELETE CASCADE,
+      account UUID REFERENCES account(id) ON DELETE CASCADE,
       amount int,
       amount_paid int,
       amount_left int,
@@ -223,8 +223,8 @@ export const up = async (knex: Knex) => {
     CREATE TABLE IF NOT EXISTS user_involvement(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       "user" UUID REFERENCES "user"(id),
-      project UUID REFERENCES project(id),
-      account UUID REFERENCES account(id),
+      project UUID REFERENCES project(id) ON DELETE CASCADE,
+      account UUID REFERENCES account(id) ON DELETE CASCADE,
       project_role text,
       project_permission text,
       UNIQUE ("user", project, account)
@@ -233,8 +233,8 @@ export const up = async (knex: Knex) => {
     CREATE TABLE IF NOT EXISTS history.user_involvement_history(
       user_involvement UUID REFERENCES user_involvement(id),
       "user" UUID REFERENCES "user"(id),
-      project UUID REFERENCES project(id),
-      account UUID REFERENCES account(id),
+      project UUID REFERENCES project(id) ON DELETE CASCADE,
+      account UUID REFERENCES account(id) ON DELETE CASCADE,
       project_role text,
       project_permission text,
       created_on TIMESTAMP NOT NULL DEFAULT NOW()

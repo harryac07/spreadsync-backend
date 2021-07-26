@@ -1,4 +1,5 @@
-import { Account } from '../../models';
+import db from '../../models/db';
+import { Account, Project } from '../../models';
 
 const getAllAccounts = async (req, res, next) => {
   try {
@@ -14,6 +15,28 @@ const createAccount = async (req, res, next) => {
     const payload = req.body;
     const account = await Account.createAccount(payload);
     res.status(200).json(account);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateAccount = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const payload = req.body;
+    await Account.updateAccount(id, payload);
+    res.status(200).json({ data: 'Account updated successfully!' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteAccount = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    await Account.deleteAccount(id);
+    res.status(200).json({ data: 'Account updated successfully!' });
   } catch (error) {
     next(error);
   }
@@ -35,5 +58,7 @@ const getAccountByAccountName = async (req, res, next) => {
 export {
   getAllAccounts,
   createAccount,
+  updateAccount,
+  deleteAccount,
   getAccountByAccountName,
 };

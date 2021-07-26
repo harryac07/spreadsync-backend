@@ -9,6 +9,16 @@ import { Project, ProjectWithRelations, JobListWithProject } from 'src/types';
 const createProject = async (reqPayload: Pick<Project, "name" | "description" | "account" | "admin">): Promise<Project[]> => {
   return db('project').insert(reqPayload).returning('*');
 };
+
+/**
+ * deleteProject
+ * @param {Object}projectId - project id to delete
+ * @param {Object}trx - databse transaction object
+ */
+const deleteProject = async (projectId: string, trx = db): Promise<any> => {
+  return trx('project').where({ id: projectId }).delete();
+};
+
 /**
  * getAllProjects
  * @returns {Array}
@@ -115,6 +125,7 @@ const getAllProjectTeamMembers = async (projectId: string) => {
 
 export default {
   createProject,
+  deleteProject,
   getAllProjects,
   getProjectById,
   getAllProjectsWithOtherRelations,
