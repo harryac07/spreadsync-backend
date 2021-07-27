@@ -12,7 +12,14 @@ const getAllAccounts = async (req, res, next) => {
 
 const createAccount = async (req, res, next) => {
   try {
-    const payload = req.body;
+    const { id: userId } = req.locals.user;
+    const payload = {
+      name: req.body?.name,
+      admin: userId
+    };
+    if (!payload.name || !payload.admin) {
+      throw new Error(`Account name and user admin is required!`);
+    }
     const account = await Account.createAccount(payload);
     res.status(200).json(account);
   } catch (error) {
