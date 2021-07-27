@@ -24,12 +24,15 @@ type CreateUserAndAccountType = {
  * _createUserAndAccount
  * @param {Object} payload - req payload
  * @param {Boolean} sendConfirmationEmail - send confirmation email. True by default
+ * @param {Boolean} existingUserId - If user id exists, providing this value updates the existing user.
  * @returns {Array} created user response array
  **/
 export const _createUserAndAccount = async (
   payload: CreateUserAndAccountType | any,
   sendConfirmationEmail = true,
+  existingUserId = ''
 ): Promise<UserType[]> => {
+
   try {
     let user: UserType[] = [];
     const { account_name } = payload;
@@ -40,14 +43,26 @@ export const _createUserAndAccount = async (
     // create user and account
     await db.transaction(async function (trx) {
       delete payload.account_name;
-      user = await User.createUser(
-        {
-          ...payload,
-          password: hashPassword,
-          is_active: sendConfirmationEmail ? false : true,
-        },
-        trx,
-      );
+      if (existingUserId) {
+        user = await User.updateUserById(
+          existingUserId,
+          {
+            ...payload,
+            password: hashPassword,
+            is_active: sendConfirmationEmail ? false : true,
+          },
+          trx,
+        );
+      } else {
+        user = await User.createUser(
+          {
+            ...payload,
+            password: hashPassword,
+            is_active: sendConfirmationEmail ? false : true,
+          },
+          trx,
+        );
+      }
       // create Account
       if (account_name) {
         await Account.createAccount(
@@ -278,7 +293,7 @@ const loginAuth = async (req, res, next) => {
 
     const userRes = await User.getUserByEmail(userDetails.email);
     let user = userRes[0];
-    if (userRes.length === 0) {
+    if (userRes.length === 0 || user?.password === 'temp password') {
       // create new user to DB but dont send confirmation email
       const createdUser = await _createUserAndAccount(
         {
@@ -287,8 +302,10 @@ const loginAuth = async (req, res, next) => {
           firstname: userDetails.given_name,
           lastname: userDetails.family_name,
           account_name: `Account ${userDetails.email}`,
+          is_using_social_login: true
         },
         false,
+        user?.id
       );
       user = createdUser[0];
     }

@@ -20,6 +20,7 @@ export const up = async (knex: Knex) => {
       phone text,
       company text,
       is_active BOOLEAN DEFAULT FALSE,
+      is_using_social_login BOOLEAN DEFAULT FALSE,
       created_on TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_on TIMESTAMP
     );
