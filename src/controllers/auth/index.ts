@@ -282,7 +282,7 @@ const login = async (req, res, next) => {
 };
 
 const loginAuth = async (req, res, next) => {
-  const { authCode, auth = '' } = req.body;
+  const { authCode, auth = '', signupWithoutAccount = false } = req.body;
   try {
     if (auth !== 'google' || !authCode) {
       throw new Error('Authentication not allowed!');
@@ -301,7 +301,7 @@ const loginAuth = async (req, res, next) => {
           password: userDetails.email + moment(),
           firstname: userDetails.given_name,
           lastname: userDetails.family_name,
-          account_name: `Account ${userDetails.email}`,
+          account_name: signupWithoutAccount ? '' : `Account ${userDetails.email}`,
           is_using_social_login: true
         },
         false,

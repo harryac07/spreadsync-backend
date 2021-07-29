@@ -1,5 +1,11 @@
 import db from '../../models/db';
-import { Account, Project } from '../../models';
+import { Account, Project, User } from '../../models';
+import {
+  sendAccountOwnershipInvitationEmailToUser,
+  notifyUserForProjectInvitation,
+  notifyUserForAccountOwnershipInvitation,
+  generateInvitationToken,
+} from '../../util/';
 
 const getAllAccounts = async (req, res, next) => {
   try {
@@ -22,6 +28,84 @@ const createAccount = async (req, res, next) => {
     }
     const account = await Account.createAccount(payload);
     res.status(200).json(account);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const transferAccountOwnership = async (req, res, next) => {
+  try {
+    const { id: userId } = req.locals.user;
+    const { id: accountId } = req.params;
+    const email = req.body?.email;
+    if (!email) {
+      throw new Error(`Email is required to transfer the account ownership!`);
+    }
+
+    // Check if requesting user is account super Admin
+    const isUserAccountAdmin = await Account.isAccountAdmin(userId);
+    if (!isUserAccountAdmin) {
+      throw new Error(`Request forbidden! You must be the account owner.`);
+    }
+    /* Check if user already exists and is active */
+    const [user] = await User.getUserByEmail(email);
+    if (user) {
+      await db.transaction(async trx => {
+        // make user an account admin
+        const [account] = await trx('account')
+          .where({
+            id: accountId
+          })
+          .update({
+            admin: user?.id
+          })
+          .returning('*');
+        if (!account?.id) {
+          throw new Error('Account not found with the provided id');
+        }
+        // send transfership email to the user just the notification
+        await notifyUserForAccountOwnershipInvitation({
+          email,
+          accountName: account?.name,
+          extraText: !user?.is_active ? `<p>Note: <i>You have a pending invitation. Please accept the invitation and continue using Spreadsync</i><p/>` : ''
+        });
+      });
+    } else {
+      const token = generateInvitationToken({
+        accountId,
+        email,
+        signupWithoutAccount: true
+      });
+      await db.transaction(async trx => {
+        // create user
+        const [newUser] = await User.createUser(
+          {
+            email,
+            password: 'temp password',
+          },
+          trx,
+        );
+        // make user an account admin
+        const [account] = await trx('account')
+          .where({
+            id: accountId
+          })
+          .update({
+            admin: newUser?.id
+          })
+          .returning('*');
+        if (!account?.id) {
+          throw new Error('Account not found with the provided id');
+        }
+        // send sign up invitation
+        await sendAccountOwnershipInvitationEmailToUser({
+          email,
+          token,
+          accountName: account?.name
+        });
+      });
+    }
+    res.status(200).json({ data: 'Ok' });
   } catch (error) {
     next(error);
   }
@@ -65,6 +149,7 @@ const getAccountByAccountName = async (req, res, next) => {
 export {
   getAllAccounts,
   createAccount,
+  transferAccountOwnership,
   updateAccount,
   deleteAccount,
   getAccountByAccountName,

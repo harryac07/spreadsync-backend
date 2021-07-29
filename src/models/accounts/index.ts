@@ -1,5 +1,6 @@
-import db from '../db';
 import Knex from 'knex';
+import db from '../db';
+import { User } from '../../models';
 import { Account, AccountPayload } from 'src/types';
 
 /**
@@ -59,6 +60,28 @@ const getAccountById = async (accountId: string): Promise<Account[]> => {
   return db('account').select().where({ id: accountId });
 };
 
+const isAccountAdmin = async (userIdOrEmail: string): Promise<boolean> => {
+  let userId = userIdOrEmail;
+  if (!userId) {
+    return false;
+  }
+
+  if (userIdOrEmail?.includes('@')) {
+    // checking with email
+    const [user] = await User.getUserByEmail(userIdOrEmail);
+    userId = user.id;
+    if (!userId) {
+      return false;
+    }
+  }
+
+  const [account] = await db('account').select().where({ admin: userId });
+  if (account) {
+    return true;
+  }
+  return false;
+};
+
 /**
  * getAccountByAccountName
  * @param {String}accountName - accountName
@@ -86,4 +109,5 @@ export default {
   deleteAccount,
   getAllAccounts,
   getAccountByAccountName,
+  isAccountAdmin,
 };

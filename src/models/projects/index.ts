@@ -42,6 +42,7 @@ const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string
     .select(
       'project.*',
       'account.name as accountName',
+      'account.admin as accountAdmin',
       db.raw('i.count::int as total_members'),
     )
     .leftJoin('account', 'account.id', 'project.account')
@@ -68,7 +69,13 @@ const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string
       if (filterObj.permitted_only)
         builder.where('i.count', '>', 0);
       if (filterObj.user)
-        builder.where('i.user', filterObj.user);
+        builder.where({ 'i.user': filterObj.user });
+    })
+    .orWhere((builder) => {
+      if (filterObj.account_id)
+        builder.where('project.account', filterObj.account_id);
+      if (filterObj.user)
+        builder.where({ 'account.admin': filterObj.user });
     });
 };
 
