@@ -39,6 +39,7 @@ const getAllProjects = async (filterObj: { account_id?: string } = {}): Promise<
  */
 const getAllProjectsWithOtherRelations = async (filterObj: { account_id?: string, permitted_only?: boolean, user?: string }): Promise<ProjectWithRelations[]> => {
   return db('project')
+    .distinctOn('project.id')
     .select(
       'project.*',
       'account.name as accountName',
