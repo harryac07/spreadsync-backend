@@ -256,15 +256,16 @@ const login = async (req, res, next) => {
         if (!user) {
           throw new Error('User not found. Provide valid email!');
         }
-        const validate = await User.isValidPassword(email, password);
-        if (!validate) {
-          throw new Error('Password incorrect!');
-        }
 
         if (!user.is_active) {
           throw new Error(
             'User has not confirmed email yet. Please check your email and verify.',
           );
+        }
+
+        const validate = await User.isValidPassword(email, password);
+        if (!validate) {
+          throw new Error('Password incorrect!');
         }
 
         const authTokenPayload = _signAndGetAuthToken({
