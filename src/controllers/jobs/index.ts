@@ -361,7 +361,6 @@ const listAllDatabaseTable = async (req, res, next) => {
             FROM information_schema.tables
             WHERE table_type ='BASE TABLE'
               AND table_schema not in ('pg_catalog', 'information_schema')
-              AND table_schema = '${jobDataSource?.database_name}'
             ORDER BY table_schema;
           `);
           break;

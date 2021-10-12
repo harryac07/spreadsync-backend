@@ -215,9 +215,11 @@ const updateProjectTeamMember = async (req, res, next) => {
     const { id, user_involvement_id } = req.params;
     const { email, id: userId } = req.locals.user;
     const permissionList = req.body?.permission ?? [];
+    const role = req.body?.role ?? '';
 
     const payload = {
-      project_permission: permissionList?.length ? permissionList?.join(',') : ''
+      project_permission: permissionList?.length ? permissionList?.join(',') : '',
+      project_role: role
     }
 
     if (!user_involvement_id || id === 'undefined') {

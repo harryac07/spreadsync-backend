@@ -5,13 +5,13 @@ import User from '../../models/users';
 import * as projectCtrl from '../../controllers/projects';
 import { Project as ProjectTypes } from 'src/types';
 
+const request = supertest(app);
+
 jest.mock('../../util/');
 jest.mock('../../models/db');
 jest.mock('knex');
 
-const request = supertest(app);
-
-const projectMockPayload: Array<ProjectTypes & { accountName: string; }> = [
+const projectMockPayload: Array<ProjectTypes & { accountName: string; accountAdmin: string; total_members?: number; }> = [
   {
     id: '4b36afc8-5205-49c1-af26-4dc6f26db982',
     name: 'Test project',
@@ -21,6 +21,8 @@ const projectMockPayload: Array<ProjectTypes & { accountName: string; }> = [
     created_on: '2020-05-13T18:53:36.631Z',
     updated_on: null,
     accountName: 'Test Account 1',
+    accountAdmin: "33a02a32-e755-48c9-b454-33359df7ff0c",
+    total_members: 1
   },
   {
     id: '4b36afc8-5205-49c1-af26-4dc6f27db982',
@@ -31,6 +33,8 @@ const projectMockPayload: Array<ProjectTypes & { accountName: string; }> = [
     created_on: '2020-05-13T18:53:36.631Z',
     updated_on: null,
     accountName: 'Test Account 2',
+    accountAdmin: "4b36afc8-5205-49c1-af16-4dc6f96db980",
+    total_members: 2
   },
 ];
 
