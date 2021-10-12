@@ -54,6 +54,16 @@ beforeAll(async () => {
   ]);
   jest.spyOn(User, 'isValidPassword').mockResolvedValue(true);
   jest.spyOn(User, 'trackUserAuthToken').mockResolvedValue();
+  jest.spyOn(User, 'getPermissionForUserByAccountId').mockResolvedValue(
+    [{
+      id: '123',
+      user: '',
+      project: '',
+      account: '4b36afc8-5205-49c1-af16-4dc6f96db782',
+      project_role: '',
+      project_permission: '',
+    }]
+  );
   const response = await request.post('/api/auth/login').send({
     email: 'test@test.com',
     password: 'testPwd',
