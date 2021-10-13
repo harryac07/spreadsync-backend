@@ -1,5 +1,5 @@
 import GoogleSheet from './sheet';
-
+import { BadRequest, AuthenticationError } from '../../util/CustomError';
 type DataJobType = 'source' | 'target';
 
 const createNewSpreadSheet = async (req, res, next) => {
@@ -7,11 +7,11 @@ const createNewSpreadSheet = async (req, res, next) => {
     const { id: userId } = req.locals?.user ?? {};
     const { job_id: jobId } = req.params;
     if (!userId) {
-      throw new Error('User not authenticated!');
+      throw new AuthenticationError('User not authenticated!');
     }
     const { spreadsheet_name = '', type } = req.body;
     if (!spreadsheet_name) {
-      throw new Error('Spreadsheet name is required!');
+      throw new BadRequest('Spreadsheet name is required!');
     }
     const sheetApi = await GoogleSheet.init(jobId, type);
     const spreadsheetId: string = await sheetApi.createSpreadsheet(spreadsheet_name);
@@ -29,7 +29,7 @@ const listAllGoogleSheetsForJob = async (req, res, next) => {
     const { job_id: jobId } = req.params;
     const { nextPageToken, reqType } = req.query;
     if (!userId) {
-      throw new Error('User not authenticated!');
+      throw new AuthenticationError('User not authenticated!');
     }
 
     let sheetList: any = { files: [] };
@@ -55,7 +55,7 @@ const getSpreadSheet = async (req, res, next) => {
     const { data_type: dataType }: { data_type: DataJobType } = req.query;
 
     if (!userId) {
-      throw new Error('User not authenticated!');
+      throw new AuthenticationError('User not authenticated!');
     }
     const sheetApi = await GoogleSheet.init(jobId, dataType);
     const spreadSheet = await sheetApi.getSpreadSheet(spreadSheetId);

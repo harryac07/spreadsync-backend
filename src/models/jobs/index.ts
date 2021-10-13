@@ -1,5 +1,6 @@
 import db from '../db';
 import { Job, CreateJobPayload, JobSchedule, DataSource as DataSourceTypes, SpreadsheetConfig } from 'src/types';
+import { BadRequest } from '../../util/CustomError';
 
 type JobScheduleReqPayloadProps = Omit<JobSchedule, 'id' | 'created_on' | 'updated_on'>
 
@@ -91,7 +92,7 @@ const getJobById = async (id: string): Promise<Job[]> => {
 
 const deleteJobWithAllRelations = async (jobId: string): Promise<any> => {
   if (!jobId) {
-    throw new Error('Job id is required to delete a job');
+    throw new BadRequest('Job id is required to delete a job');
   }
   await db.transaction(async (trx) => {
     await trx('history.job_history').where('job', jobId).del();
@@ -107,7 +108,7 @@ const deleteJobWithAllRelations = async (jobId: string): Promise<any> => {
 
 const deleteApiConfigForJob = async (jobId: string, reqType: 'source' | 'target', trx = db): Promise<any> => {
   if (!jobId) {
-    throw new Error('Job id is required!');
+    throw new BadRequest('Job id is required!');
   }
   const filter = {
     job_id: jobId,
@@ -118,7 +119,7 @@ const deleteApiConfigForJob = async (jobId: string, reqType: 'source' | 'target'
 
 const deleteDatabaseConfigForJob = async (jobId: string, reqType: 'source' | 'target', trx = db): Promise<any> => {
   if (!jobId) {
-    throw new Error('Job id is required!');
+    throw new BadRequest('Job id is required!');
   }
   const filter = {
     job: jobId,
@@ -129,7 +130,7 @@ const deleteDatabaseConfigForJob = async (jobId: string, reqType: 'source' | 'ta
 
 const deleteSpreadsheetConfigForJob = async (jobId: string, reqType: 'source' | 'target', trx = db): Promise<any> => {
   if (!jobId) {
-    throw new Error('Job id is required!');
+    throw new BadRequest('Job id is required!');
   }
   const filter = {
     job_id: jobId,
@@ -185,7 +186,7 @@ const updateSpreadSheetConfigForJob = async (configId: string, reqPayload: any):
 
 const getSpreadSheetConfigForJob = async (jobId: string, filterObj: { type?: 'source' | 'target' }): Promise<SpreadsheetConfig[]> => {
   if (!jobId) {
-    throw new Error('Job id must be defined');
+    throw new BadRequest('Job id must be defined');
   }
   const filter = {
     job_id: jobId,

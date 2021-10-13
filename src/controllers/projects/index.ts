@@ -2,6 +2,7 @@ import dbClient from '../../models/db';
 import { Project, User } from '../../models';
 import { Project as ProjectTypes, ProjectWithRelations, JobListWithProject } from 'src/types';
 import cache from '../../util/nodeCache';
+import { AuthenticationError, BadRequest } from '../../util/CustomError';
 import {
   sendInvitationEmailToUser,
   notifyUserForProjectInvitation,
@@ -88,8 +89,8 @@ const createProject = async (req, res, next) => {
   try {
     const { id, email } = req.locals.user;
     const { account_id } = req.headers;
-    if (!account_id) {
-      throw new Error('Account id is required!');
+    if (!account_id || account_id === 'null') {
+      throw new BadRequest('Account id is required!');
     }
     const reqPayload = req.body;
     const { projectPayload = {}, invitedUsers = [] } = reqPayload;
@@ -121,7 +122,7 @@ const getAllProjects = async (req, res, next) => {
     const { account_id } = req.headers;
 
     if (!account_id) {
-      throw new Error('Account id is required!');
+      throw new BadRequest('Account id is required!');
     }
     const filters = { account_id, permitted_only: true, user: id };
     const projects: ProjectWithRelations[] = await Project.getAllProjectsWithOtherRelations(filters);
@@ -173,7 +174,7 @@ const inviteProjectTeamMembers = async (req, res, next) => {
     } = req.body;
 
     if (!payload?.accountId || id === 'undefined') {
-      throw new Error('Account id and project id is required');
+      throw new BadRequest('Account id and project id is required');
     }
 
     await _inviteUserToProject(
@@ -196,10 +197,10 @@ const removeProjectTeamMember = async (req, res, next) => {
     const { email } = req.locals.user;
 
     if (!user_involvement_id || id === 'undefined') {
-      throw new Error('Project id is required');
+      throw new BadRequest('Project id is required');
     }
     if (!email) {
-      throw new Error('Authentication error!');
+      throw new AuthenticationError('Authentication error!');
     }
 
     await User.removeProjectInvolvementById(user_involvement_id);
@@ -223,10 +224,10 @@ const updateProjectTeamMember = async (req, res, next) => {
     }
 
     if (!user_involvement_id || id === 'undefined') {
-      throw new Error('Project id is required');
+      throw new BadRequest('Project id is required');
     }
     if (!email) {
-      throw new Error('Authentication error!');
+      throw new AuthenticationError('Authentication error!');
     }
     await User.updateProjectTeamMember(user_involvement_id, payload);
     const cacheKey = `getPermissionForUserByAccountId-${userId}`;

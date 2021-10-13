@@ -1,6 +1,6 @@
 import knex from 'knex';
 import { Job } from '../../models';
-
+import { NotFound } from '../../util/CustomError';
 
 type ReqType = 'target' | 'source';
 
@@ -31,7 +31,7 @@ class DatabaseSource {
   async initialiseDatabase(type: ReqType): Promise<void> {
     const [dataSource] = await Job.getJobDataSource(this.jobId, type);
     if (!dataSource) {
-      throw new Error('Datasource not found with jobId!');
+      throw new NotFound('Datasource not found with jobId!');
     }
     this.db = knex({
       client: dataSource?.database_type?.toLowerCase(),

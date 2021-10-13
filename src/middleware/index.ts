@@ -2,15 +2,16 @@ import passport from 'passport';
 import { intersection, flatten } from 'lodash';
 import { User } from '../models';
 import cache from '../util/nodeCache';
+import { AuthenticationError, AuthorizationError, InternalServerError } from '../util/CustomError'
 
 const checkAuth = (req, res, next) => {
   passport.authenticate('jwt', { session: false }, async (err, token) => {
     try {
       if (err) {
-        throw new Error(err);
+        throw new InternalServerError(err);
       }
       if (!token) {
-        throw new Error('Invalid token. Authentication failed!');
+        throw new AuthenticationError('Invalid token. Authentication failed!');
       }
       const userId = token.id;
       const accountId = req.headers?.account_id;
@@ -38,7 +39,6 @@ const checkAuth = (req, res, next) => {
       req.locals.user.account = accountId;
       next();
     } catch (e) {
-      console.error('error ', e.stack);
       next(e);
     }
   })(req, res, next);
@@ -53,7 +53,7 @@ const checkPermission = (...permittedRoles) => {
     if (email && isPermissionOk) {
       next();
     } else {
-      throw new Error('Access to the route is not allowed!');
+      throw new AuthorizationError('Access to the route is not allowed!');
     }
   }
 }

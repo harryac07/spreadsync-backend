@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../../models';
 import db from '../../models/db';
 import { sendEmailConfirmationEmail } from '../../util/';
+import { BadRequest } from '../../util/CustomError';
 
 const getAllUsers = async (req, res, next) => {
   try {
@@ -33,7 +34,7 @@ const updateUserById = async (req, res, next) => {
     const payload = req.body;
 
     if (!payload?.firstname || !payload?.lastname || !payload?.email) {
-      throw new Error('Please fill up all required fields');
+      throw new BadRequest('Please fill up all required fields');
     }
 
     // Get user
@@ -70,11 +71,11 @@ const updateUserPassword = async (req, res, next) => {
 
     const validate = await User.isValidPassword(email, password);
     if (!validate) {
-      throw new Error('Original password incorrect!');
+      throw new BadRequest('Original password incorrect!');
     }
 
     if (new_password !== repeated_new_password) {
-      throw new Error('Password unmatched!');
+      throw new BadRequest('Password unmatched!');
     }
     if (password === new_password) {
       res.status(200).json({ data: 'Same password provided!' });

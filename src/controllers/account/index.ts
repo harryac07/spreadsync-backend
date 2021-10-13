@@ -6,6 +6,7 @@ import {
   notifyUserForAccountOwnershipInvitation,
   generateInvitationToken,
 } from '../../util/';
+import { BadRequest, NotFound, AuthorizationError } from '../../util/CustomError';
 
 const getAllAccounts = async (req, res, next) => {
   try {
@@ -24,7 +25,7 @@ const createAccount = async (req, res, next) => {
       admin: userId
     };
     if (!payload.name || !payload.admin) {
-      throw new Error(`Account name and user admin is required!`);
+      throw new BadRequest(`Account name and user admin is required!`);
     }
     const account = await Account.createAccount(payload);
     res.status(200).json(account);
@@ -39,13 +40,13 @@ const transferAccountOwnership = async (req, res, next) => {
     const { id: accountId } = req.params;
     const email = req.body?.email;
     if (!email) {
-      throw new Error(`Email is required to transfer the account ownership!`);
+      throw new BadRequest(`Email is required to transfer the account ownership!`);
     }
 
     // Check if requesting user is account super Admin
     const isUserAccountAdmin = await Account.isAccountAdmin(userId);
     if (!isUserAccountAdmin) {
-      throw new Error(`Request forbidden! You must be the account owner.`);
+      throw new AuthorizationError(`Request forbidden! You must be the account owner.`);
     }
     /* Check if user already exists and is active */
     const [user] = await User.getUserByEmail(email);
@@ -61,7 +62,7 @@ const transferAccountOwnership = async (req, res, next) => {
           })
           .returning('*');
         if (!account?.id) {
-          throw new Error('Account not found with the provided id');
+          throw new NotFound('Account not found with the provided id');
         }
         // send transfership email to the user just the notification
         await notifyUserForAccountOwnershipInvitation({
@@ -95,7 +96,7 @@ const transferAccountOwnership = async (req, res, next) => {
           })
           .returning('*');
         if (!account?.id) {
-          throw new Error('Account not found with the provided id');
+          throw new NotFound('Account not found with the provided id');
         }
         // send sign up invitation
         await sendAccountOwnershipInvitationEmailToUser({
@@ -137,7 +138,7 @@ const getAccountByAccountName = async (req, res, next) => {
   try {
     const { name } = req.params;
     if (!name) {
-      throw new Error('Account name is required!');
+      throw new BadRequest('Account name is required!');
     }
     const account = await Account.getAccountByAccountName(name);
     res.status(200).json(account);

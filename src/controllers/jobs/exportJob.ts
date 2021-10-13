@@ -2,6 +2,7 @@ import { zipObject, isEmpty } from 'lodash';
 import ClientDBSource from './databaseInstance';
 import GoogleSheet from '../googleSheetApi/sheet';
 import { Job, APIConfig } from '../../models';
+import { BadRequest, NotFound } from '../../util/CustomError';
 
 import { getFormattedDataWithHeader, getFormattedDataBody } from '../utils';
 import { _getDataFromAPIEndpoint } from './apiDataSource';
@@ -13,7 +14,7 @@ class ExportJob {
   }
   async getSpreadSheetConfigForJob(type: 'source' | 'target') {
     if (!type) {
-      throw new Error('Rquest type must be provided');
+      throw new BadRequest('Rquest type must be provided');
     }
     const [sheetData] = await Job.getSpreadSheetConfigForJob(this.jobId, { type });
     return sheetData;
@@ -110,7 +111,7 @@ class ExportJob {
     const sheetData: any[] = await this.getDataFromSheet('source');
 
     if (!sheetData.length) {
-      throw new Error('Source sheet is empty.');
+      throw new BadRequest('Source sheet is empty.');
     }
 
     /* Get target sheet config */
@@ -148,7 +149,7 @@ class ExportJob {
     const { db, config } = await ClientDBSource.init(this.jobId, 'target');
     const tableName = config.tablename;
     if (!tableName) {
-      throw new Error('Table name is not set!');
+      throw new BadRequest('Table name is not set!');
     }
     /* Get column names from table */
     const data = await db.raw(`
@@ -166,7 +167,7 @@ class ExportJob {
       return zipObject(columnHeader, each);
     });
     if (!formattedRows.length) {
-      throw new Error('Source sheet is empty.');
+      throw new BadRequest('Source sheet is empty.');
     }
 
     /* insert data into table */
@@ -187,7 +188,7 @@ class ExportJob {
     const dataToExport = this.getFormattedSQLDataByClient(sourceConfig?.database_type, dbResponse);
 
     if (!dataToExport?.length) {
-      throw new Error('No data to export!');
+      throw new NotFound('No data to export!');
     }
 
     /* insert data into table */
@@ -210,7 +211,7 @@ class ExportJob {
     const dataRows = this.getFormattedSQLDataByClient(config?.database_type, dbResponse);
 
     if (!dataRows?.length) {
-      throw new Error('No data to export!');
+      throw new NotFound('No data to export!');
     }
 
     /* Get sheet config */
@@ -252,7 +253,7 @@ class ExportJob {
       return each.type === 'source';
     })
     if (!sourceAPIConfig) {
-      throw new Error('API config does not exists!');
+      throw new BadRequest('API config does not exists!');
     }
     const apiConfigId = sourceAPIConfig.id as string;
 
@@ -288,7 +289,7 @@ class ExportJob {
       return each.type === 'source';
     })
     if (!sourceAPIConfig) {
-      throw new Error('API config does not exists!');
+      throw new BadRequest('API config does not exists!');
     }
     const apiConfigId = sourceAPIConfig.id as string;
 

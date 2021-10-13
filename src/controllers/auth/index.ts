@@ -7,6 +7,7 @@ import { User, Account, SocialAuth } from '../../models';
 
 import GoogleApi from '../../util/googleAuth';
 import { sendEmailConfirmationEmail } from '../../util/';
+import { BadRequest, DuplicateError, NotFound, NotActiveError, AuthenticationError, InternalServerError } from '../../util/CustomError';
 import { JwtDecodedType, UserAuth, UserType, SocialAuth as SocialAuthTypes, CreateSocialAuthPayload as CreateSocialAuthPayloadTypes, socialTypes } from '../../types';
 
 type CreateUserAndAccountType = {
@@ -90,7 +91,7 @@ export const _createUserAndAccount = async (
     return user;
   } catch (e) {
     console.error(e.stack);
-    throw new Error(
+    throw new InternalServerError(
       'Database error occured while creating user account. Please try again!',
     );
   }
@@ -106,7 +107,7 @@ const _updateUser = async (payload: CreateUserAndAccountType, token: string): Pr
     // verify token is valid
     const decoded = jwt.verify(token, process.env.INVITATION_JWT_SECRET as jwt.Secret);
     if ((decoded as JwtDecodedType).email && (decoded as JwtDecodedType).email !== payload.email) {
-      throw new Error('invalid token');
+      throw new AuthenticationError('invalid token');
     }
 
     let user: UserType[] = [];
@@ -146,9 +147,9 @@ const _updateUser = async (payload: CreateUserAndAccountType, token: string): Pr
       e.message.includes('invalid signature') ||
       e.message.includes('invalid token')
     ) {
-      throw new Error('The invitation token is no longer valid.');
+      throw new AuthenticationError('The invitation token is no longer valid.');
     }
-    throw new Error(
+    throw new InternalServerError(
       'Database error occured while creating user. Please try again!',
     );
   }
@@ -190,10 +191,10 @@ const signup = async (req, res, next) => {
     async (err, data, info) => {
       try {
         if (err) {
-          throw new Error(err);
+          throw new InternalServerError(err);
         }
         if (!data) {
-          throw new Error('Signup failed. Email or password missing!');
+          throw new BadRequest('Signup failed. Email or password missing!');
         }
 
         const { token } = req.query;
@@ -205,10 +206,10 @@ const signup = async (req, res, next) => {
 
         if (token) {
           if (userRes.length > 0 && userRes[0].is_active) {
-            throw new Error('User already registered with this token! Log in.');
+            throw new DuplicateError('User already registered with this token! Log in.');
           }
           if (userRes.length === 0) {
-            throw new Error(
+            throw new BadRequest(
               'The invitation is no longer valid. Please sign up fresh /signup',
             );
           }
@@ -219,7 +220,7 @@ const signup = async (req, res, next) => {
 
           // check if user already exists
           if (userRes.length > 0) {
-            throw new Error('User exists already!');
+            throw new DuplicateError('User exists already!');
           }
           user = await _createUserAndAccount(payload);
         }
@@ -238,10 +239,10 @@ const login = async (req, res, next) => {
     async (err, data, info) => {
       try {
         if (err) {
-          throw new Error(err);
+          throw new InternalServerError(err);
         }
         if (!data) {
-          throw new Error(
+          throw new NotFound(
             info.message
               ? info.message
               : 'User not found. Please provide valid credentials!',
@@ -254,18 +255,18 @@ const login = async (req, res, next) => {
         const userRes = await User.getUserByEmail(email);
         const user = userRes[0];
         if (!user) {
-          throw new Error('User not found. Provide valid email!');
+          throw new NotFound('User not found. Provide valid email!');
         }
 
         if (!user.is_active) {
-          throw new Error(
+          throw new NotActiveError(
             'User has not confirmed email yet. Please check your email and verify.',
           );
         }
 
         const validate = await User.isValidPassword(email, password);
         if (!validate) {
-          throw new Error('Password incorrect!');
+          throw new BadRequest('Password incorrect!');
         }
 
         const authTokenPayload = _signAndGetAuthToken({
@@ -286,7 +287,7 @@ const loginAuth = async (req, res, next) => {
   const { authCode, auth = '', signupWithoutAccount = false } = req.body;
   try {
     if (auth !== 'google' || !authCode) {
-      throw new Error('Authentication not allowed!');
+      throw new BadRequest('Authentication not allowed!');
     }
 
     const googleClient = await GoogleApi.init(authCode);
@@ -312,7 +313,7 @@ const loginAuth = async (req, res, next) => {
     }
 
     if (!user.is_active) {
-      throw new Error('User is not active!');
+      throw new NotActiveError('User is not active!');
     }
 
     const authTokenPayload = _signAndGetAuthToken({
@@ -334,17 +335,17 @@ const activateUser = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.INVITATION_JWT_SECRET as jwt.Secret) || {};
     const { user_id } = decoded as JwtDecodedType;
     if (!user_id) {
-      throw new Error('Invalid token');
+      throw new AuthenticationError('Invalid token');
     }
     const userRes = await User.getUserById(user_id);
     const user = userRes[0];
 
     if (userRes.length === 0) {
-      throw new Error('User not found');
+      throw new NotFound('User not found');
     }
 
     if (user.is_active) {
-      throw new Error('Token is no longer valid!');
+      throw new BadRequest('Token is no longer valid!');
     }
 
     /* Acticate user */
@@ -367,10 +368,10 @@ const saveSocialAuth = async (req, res, next) => {
   const { id: userId } = req.locals.user;
   try {
     if (!authCode) {
-      throw new Error('Authentication not allowed!');
+      throw new BadRequest('Authentication not allowed!');
     }
     if (!jobId) {
-      throw new Error('Job id is required!');
+      throw new BadRequest('Job id is required!');
     }
 
     /* Generate token and store to social_auth */

@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import GoogleApi from '../../util/googleAuth';
+import { BadRequest, InternalServerError } from '../../util/CustomError';
 
 class SpreadSheet {
   sheet: any;
@@ -17,10 +18,10 @@ class SpreadSheet {
   static init(jobId: string, reqType: 'source' | 'target' | any = null) {
     return (async function () {
       if (!reqType) {
-        throw new Error('Request type must be provided to init Google Auth for job');
+        throw new BadRequest('Request type must be provided to init Google Auth for job');
       }
       if (!jobId) {
-        throw new Error('Job id is required!');
+        throw new BadRequest('Job id is required!');
       }
       const googleClient = await GoogleApi.initForJob(jobId, reqType);
       const spreadSheetClient = new SpreadSheet(googleClient.oAuth2Client);
@@ -40,7 +41,7 @@ class SpreadSheet {
       return userInfo.data;
     }
     catch (e) {
-      throw new Error(e)
+      throw new InternalServerError(e)
     }
   }
 
@@ -75,7 +76,7 @@ class SpreadSheet {
   async updateSheetPermissionWithDriveApi(sheetId: string) {
     const userDetail = await this.getUserDetails()
     if (!userDetail?.email) {
-      throw new Error('Email is required to update sheet permission.');
+      throw new BadRequest('Email is required to update sheet permission.');
     }
     const permission = {
       type: "user",
@@ -198,7 +199,7 @@ class SpreadSheet {
           sheetIdToDeleteIfError
         );
       }
-      throw new Error("Sheet create error. Successfully reverted!");
+      throw new InternalServerError("Sheet create error. Successfully reverted!");
     }
   }
 

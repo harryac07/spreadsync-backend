@@ -2,6 +2,8 @@ import { google } from 'googleapis';
 import { SocialAuth } from '../models';
 import { isEmpty } from 'lodash';
 
+import { AuthenticationError, BadRequest, InternalServerError } from '../util/CustomError';
+
 const googleConfig = {
   clientId: process.env.GOOGLE_AUTH_CLIENT_ID,
   clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET,
@@ -50,10 +52,10 @@ class GoogleAuth {
   static initForJob(jobId: string, reqType: 'source' | 'target' | any = null) {
     return (async function () {
       if (!reqType) {
-        throw new Error('Request type must be provided to init Google Auth for job');
+        throw new BadRequest('Request type must be provided to init Google Auth for job');
       }
       if (!jobId) {
-        throw new Error('Job id is required!');
+        throw new BadRequest('Job id is required!');
       }
       let googleAuth = new GoogleAuth()
       await googleAuth.refreshTokenFromDB(jobId, reqType)
@@ -66,7 +68,7 @@ class GoogleAuth {
     const [socialAuthJob] = await SocialAuth.getSocialAuthByJobId(jobId, reqType ? { type: reqType } : null);
 
     if (isEmpty(socialAuthJob)) {
-      throw new Error('Refresh token is empty! Please re-connect again.');
+      throw new AuthenticationError('Refresh token is empty! Please re-connect again.');
     }
     const payloadData = {
       token_type: socialAuthJob.token_type,
@@ -110,7 +112,7 @@ class GoogleAuth {
       return userInfo.data;
     }
     catch (e) {
-      throw new Error(e)
+      throw new InternalServerError(e)
     }
   }
 }

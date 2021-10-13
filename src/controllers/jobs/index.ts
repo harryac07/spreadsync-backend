@@ -2,6 +2,7 @@ import knex from 'knex';
 import { Job } from '../../models';
 import db from '../../models/db';
 import ExportJob from './exportJob';
+import { AuthenticationError, BadRequest, NotFound } from '../../util/CustomError';
 import { Job as JobTypes, CreateJobPayload, DataSource } from 'src/types';
 
 const createJob = async (req, res, next) => {
@@ -11,7 +12,7 @@ const createJob = async (req, res, next) => {
       created_by: req.locals.user
     };
     if (!reqPayload.project) {
-      throw new Error('Project id is required!');
+      throw new BadRequest('Project id is required!');
     }
     const createJobPayload: CreateJobPayload = {
       name: reqPayload.name,
@@ -47,7 +48,7 @@ const cloneJobById = async (req, res, next) => {
     const { id: userId } = req.locals?.user;
 
     if (!jobId) {
-      throw new Error('Job id is required!');
+      throw new BadRequest('Job id is required!');
     }
     // Clone job
     await Job.cloneJobByJobId(jobId, { userId });
@@ -61,7 +62,7 @@ const getAllJobs = async (req, res, next) => {
     const { account_id } = req.headers;
 
     if (!account_id) {
-      throw new Error('Account id is required!');
+      throw new BadRequest('Account id is required!');
     }
     const jobs: JobTypes[] = await Job.getAllJobs();
     res.status(200).json(jobs);
@@ -75,7 +76,7 @@ const getJobById = async (req, res, next) => {
     const { id } = req.params;
 
     if (!id) {
-      throw new Error('Job id is required!');
+      throw new BadRequest('Job id is required!');
     }
     const job: JobTypes[] = await Job.getJobById(id);
     res.status(200).json(job);
@@ -90,7 +91,7 @@ const deleteJobById = async (req, res, next) => {
 
     const [job] = await Job.getJobById(jobId);
     if (!job) {
-      throw new Error('Job does not exist!')
+      throw new NotFound('Job does not exist!')
     }
     await Job.deleteJobWithAllRelations(jobId);
 
@@ -113,7 +114,7 @@ const updateJob = async (req, res, next) => {
     const dataTargetCompletedState = reqPayload?.is_data_target_configured ? { is_data_target_configured: true } : {}
 
     if (!id) {
-      throw new Error('Job id is required!');
+      throw new BadRequest('Job id is required!');
     }
 
     const jobSchedulePayload = {
@@ -162,7 +163,7 @@ const updateJob = async (req, res, next) => {
             await Job.deleteSpreadsheetConfigForJob(id, 'source', trx);
             break;
           default:
-            throw new Error('Data source invalid!')
+            throw new BadRequest('Data source invalid!')
 
         }
       }
@@ -183,7 +184,7 @@ const updateJob = async (req, res, next) => {
             await Job.deleteSpreadsheetConfigForJob(id, 'target', trx);
             break;
           default:
-            throw new Error('Data target invalid!')
+            throw new BadRequest('Data target invalid!')
         }
       }
       await Job.updateJobDetail(id, { ...updateJobPayload, ...sourceOrTargetStatus }, trx);
@@ -198,7 +199,7 @@ const getJobByProjectId = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!id) {
-      throw new Error('Project id is required!');
+      throw new BadRequest('Project id is required!');
     }
     const jobs: JobTypes[] = await Job.getJobByProjectId(id);
     res.status(200).json(jobs);
@@ -212,7 +213,7 @@ const createDataSource = async (req, res, next) => {
     const { id } = req.params;
     const reqPayload = req.body;
     if (!id) {
-      throw new Error('Job id is required!');
+      throw new BadRequest('Job id is required!');
     }
     const dataSourcePayload = {
       job: id,
@@ -277,7 +278,7 @@ const getJobDataSource = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!id) {
-      throw new Error('Job id is required!');
+      throw new BadRequest('Job id is required!');
     }
     const jobDataSource: DataSource[] = await Job.getJobDataSource(id, null);
     res.status(200).json(jobDataSource);
@@ -290,7 +291,7 @@ const getDataSourceByDatasourceId = async (req, res, next) => {
   try {
     const { data_source_id } = req.params;
     if (!data_source_id) {
-      throw new Error('Data source id is required!');
+      throw new BadRequest('Data source id is required!');
     }
     const jobDataSource: DataSource[] = await Job.getDataSourceById(data_source_id);
     res.status(200).json(jobDataSource);
@@ -303,7 +304,7 @@ const checkDatabaseConnectionByJobId = async (req, res, next) => {
   try {
     const { data_source_id } = req.params;
     if (!data_source_id) {
-      throw new Error('Data source id is required!');
+      throw new BadRequest('Data source id is required!');
     }
     const [jobDataSource]: DataSource[] = await Job.getDataSourceById(data_source_id);
     /* Connect to db */
@@ -335,7 +336,7 @@ const listAllDatabaseTable = async (req, res, next) => {
   try {
     const { data_source_id } = req.params;
     if (!data_source_id) {
-      throw new Error('Data source id is required!');
+      throw new BadRequest('Data source id is required!');
     }
     const [jobDataSource]: DataSource[] = await Job.getDataSourceById(data_source_id);
     /* Connect to db */
@@ -408,7 +409,7 @@ const createSpreadSheetConfigForJob = async (req, res, next) => {
     const reqPayload: reqPayloadTypes = req.body;
 
     if (!userId) {
-      throw new Error('User must be logged in!');
+      throw new AuthenticationError('User must be logged in!');
     }
 
     const spreadsheetConfig = await Job.createSpreadSheetConfigForJob({
@@ -434,7 +435,7 @@ const getSpreadSheetConfigForJob = async (req, res, next) => {
     const { type: requestType }: { type: 'source' | 'target' | 'undefined' } = req.query;
 
     if (!userId) {
-      throw new Error('User must be logged in!');
+      throw new AuthenticationError('User must be logged in!');
     }
 
     const spreadsheetConfig = await Job.getSpreadSheetConfigForJob(
@@ -464,7 +465,7 @@ const updateSpreadSheetConfigForJob = async (req, res, next) => {
     const reqPayload: reqPayloadTypes = req.body;
 
     if (!userId) {
-      throw new Error('User must be logged in!');
+      throw new AuthenticationError('User must be logged in!');
     }
 
     const spreadsheetConfig = await Job.updateSpreadSheetConfigForJob(configId, reqPayload);
@@ -480,7 +481,7 @@ const exportJobFromDatabaseToSpreadsheet = async (req, res, next) => {
     const type = req?.body?.type ?? 'target';
     const { id: userId } = req.locals?.user;
     if (!userId) {
-      throw new Error('User must be logged in!');
+      throw new AuthenticationError('User must be logged in!');
     }
 
     const exportJob = new ExportJob(jobId);

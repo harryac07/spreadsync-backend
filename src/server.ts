@@ -48,18 +48,25 @@ app.use('/api', routes);
 
 // Optional fallthrough error handler
 app.use(function onError(err, req, res, next) {
-  console.error(err.stack);
-  // Error logging to our Sentry
-  Sentry.withScope((scope) => {
-    scope.setUser({
-      id: req.locals?.user?.id ?? '',
-      email: req.locals?.user?.email ?? ''
-    });
-    scope.setTransactionName(req.method + ' ' + req.path)
-    Sentry.captureException(err);
-  });
+  console.error(err);
+  const status = err?.status ?? 500;
+  const type = err?.type;
 
-  res.status(500).json({
+  // Error logging to our Sentry
+  if (status === 500) {
+    Sentry.withScope((scope) => {
+      scope.setUser({
+        id: req.locals?.user?.id ?? '',
+        email: req.locals?.user?.email ?? ''
+      });
+      scope.setTransactionName(req.method + ' ' + req.path)
+      Sentry.captureException(err);
+    });
+  }
+
+  res.status(status).json({
+    ...(type ? { type } : {}),
+    status: status,
     message: err.message || 'Invalid Request',
   });
   return;

@@ -1,13 +1,14 @@
 import knex from 'knex';
 import axios from 'axios';
 import { APIConfig, Job } from '../../models';
+import { BadRequest } from '../../util/CustomError';
 import { APIConfig as APIConfigTypes } from 'src/types';
 
 const createApiConfig = async (req, res, next) => {
   try {
     const reqPayload: APIConfigTypes = req.body;
     if (!reqPayload.job_id) {
-      throw new Error('Job is is required!');
+      throw new BadRequest('Job is is required!');
     }
     await APIConfig.createApiConfig(reqPayload);
     /* Update job */
@@ -71,7 +72,7 @@ const _getDataFromAPIEndpoint = async (apiConfigId: string): Promise<any[]> => {
       headers: parsedHeaders
     })
   } else {
-    throw new Error('Only GET and POST methods are supported!');
+    throw new BadRequest('Only GET and POST methods are supported!');
   }
   return response?.data ?? [];
 }
