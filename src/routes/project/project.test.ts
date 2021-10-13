@@ -4,6 +4,7 @@ import Project from '../../models/projects';
 import User from '../../models/users';
 import * as projectCtrl from '../../controllers/projects';
 import { Project as ProjectTypes } from 'src/types';
+import cache from '../../util/nodeCache';
 
 const request = supertest(app);
 
@@ -103,7 +104,7 @@ describe('Project Endpoints', () => {
       .get('/api/projects')
       .set('Authorization', bearerToken);
     // .set('account_id', '4b36afc8-5205-49c1-af16-4dc6f96db782');
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
     expect(response.body.message).toBeTruthy();
   });
   it('should retrieve each project by id', async () => {
@@ -154,5 +155,110 @@ describe('Project Endpoints', () => {
     expect(response.body[0].account).toBeTruthy();
     expect(spy).toHaveBeenCalledTimes(1);
     expect(inviteUserToProjectSpy).toHaveBeenCalledTimes(1);
+  });
+  it('should prevent delete project if account_id is not provided in request header', async () => {
+    const spy = jest.spyOn(Project, 'deleteProject');
+    spy.mockResolvedValue(true);
+    const response = await request
+      .delete(`/api/projects/${projectMockPayload[0].id}`)
+      .set('Authorization', bearerToken);
+    expect(response.status).toBe(403);
+  });
+  it('should prevent delete project if user is not an account admin', async () => {
+    const spy = jest.spyOn(Project, 'deleteProject');
+    spy.mockResolvedValue(true);
+    const response = await request
+      .delete(`/api/projects/${projectMockPayload[0].id}`)
+      .set('Authorization', bearerToken)
+      .set('account_id', '4b36afc8-5205-49c1-af16-4d76f96db982');
+    expect(response.status).toBe(403);
+  });
+  it('Should delete project if request is made by an account admin', async () => {
+    jest.spyOn(cache, 'getOrSet')
+      .mockResolvedValue(
+        [{
+          id: '123',
+          user: '',
+          project: '',
+          account: '4b36afc8-5205-49c1-af16-4d76f96db982',
+          project_role: '',
+          project_permission: 'admin',
+        }]
+      );
+    const spy = jest.spyOn(Project, 'deleteProject');
+    spy.mockResolvedValue(true);
+    const response = await request
+      .delete(`/api/projects/${projectMockPayload[0].id}`)
+      .set('Authorization', bearerToken)
+      .set('account_id', '4b36afc8-5205-49c1-af16-4d76f96db982');
+    expect(response.status).toBe(200);
+  });
+  it('Should prevent project update if request is made by normal user', async () => {
+    const accountId = '4b36afc8-5205-49c1-af16-4d76f96db982';
+    const mockProject = projectMockPayload?.filter(({ account }) => account === accountId);
+    const requestPayload = {
+      name: 'tester 1',
+      description: 'tester 1 description',
+    };
+    jest.spyOn(cache, 'getOrSet')
+      .mockResolvedValue(
+        [{
+          id: '123',
+          user: '',
+          project: mockProject[0].id,
+          account: accountId,
+          project_role: '',
+          project_permission: 'project_read',
+        }]
+      );
+    const spy = jest.spyOn(Project, 'updateProject');
+    spy.mockResolvedValue(mockProject.map(each => {
+      return {
+        ...each,
+        ...requestPayload
+      }
+    }));
+    const response = await request
+      .patch(`/api/projects/${mockProject[0].id}`)
+      .set('Authorization', bearerToken)
+      .set('account_id', '4b36afc8-5205-49c1-af16-4d76f96db982')
+      .send(requestPayload);
+    expect(response.status).toBe(403);
+  });
+  it('Should update project if request is made by an account admin', async () => {
+    const accountId = '4b36afc8-5205-49c1-af16-4d76f96db982';
+    const mockProject = projectMockPayload?.filter(({ account }) => account === accountId);
+    const requestPayload = {
+      name: 'tester 1',
+      description: 'tester 1 description',
+    };
+    jest.spyOn(cache, 'getOrSet')
+      .mockResolvedValue(
+        [{
+          id: '123',
+          user: '',
+          project: mockProject[0].id,
+          account: accountId,
+          project_role: '',
+          project_permission: 'admin',
+        }]
+      );
+    const spy = jest.spyOn(Project, 'updateProject');
+    spy.mockResolvedValue(mockProject.map(each => {
+      return {
+        ...each,
+        ...requestPayload
+      }
+    }));
+    const response = await request
+      .patch(`/api/projects/${mockProject[0].id}`)
+      .set('Authorization', bearerToken)
+      .set('account_id', '4b36afc8-5205-49c1-af16-4d76f96db982')
+      .send(requestPayload);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body?.[0]?.id).toEqual(mockProject[0].id);
+    expect(response.body?.[0]?.name).toEqual(requestPayload.name);
+    expect(response.body?.[0]?.description).toEqual(requestPayload.description);
   });
 });

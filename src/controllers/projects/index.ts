@@ -2,7 +2,7 @@ import dbClient from '../../models/db';
 import { Project, User } from '../../models';
 import { Project as ProjectTypes, ProjectWithRelations, JobListWithProject } from 'src/types';
 import cache from '../../util/nodeCache';
-import { AuthenticationError, BadRequest } from '../../util/CustomError';
+import { AuthenticationError, AuthorizationError, BadRequest } from '../../util/CustomError';
 import {
   sendInvitationEmailToUser,
   notifyUserForProjectInvitation,
@@ -142,6 +142,51 @@ const getProjectById = async (req, res, next) => {
   }
 };
 
+const updateProject = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { email, permissions = [] } = req.locals.user;
+    const reqPayload: Partial<Pick<ProjectTypes, "name" | "description">> = req.body;
+    if (!email) {
+      throw new AuthenticationError('Authentication error!');
+    }
+    if (!permissions?.includes('admin')) {
+      throw new AuthorizationError('You must be an admin to delete the project!');
+    }
+    if (!(reqPayload?.name || reqPayload?.description)) {
+      throw new BadRequest('No valid property field is provided!')
+    }
+
+    const project = await Project.updateProject(id, {
+      ...(reqPayload?.name ? { name: reqPayload.name } : {}),
+      ...(reqPayload?.description ? { description: reqPayload.description } : {}),
+    });
+    res.status(200).json(project);
+  } catch (e) {
+    next(e);
+  }
+};
+
+const deleteProject = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { email, permissions = [] } = req.locals.user;
+    if (!email) {
+      throw new AuthenticationError('Authentication error!');
+    }
+    if (!permissions?.includes('admin')) {
+      throw new AuthorizationError('You must be an admin to delete the project!');
+    }
+
+    await Project.deleteProject(id);
+    res.status(200).json({
+      data: `Project ${id} deleted successfully!`
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 const getAllJobsForProject = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -243,6 +288,8 @@ export {
   createProject,
   getAllProjects,
   getProjectById,
+  updateProject,
+  deleteProject,
   getAllJobsForProject,
   getAllProjectTeamMembers,
   inviteProjectTeamMembers,

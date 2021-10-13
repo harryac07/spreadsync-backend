@@ -11,6 +11,17 @@ const createProject = async (reqPayload: Pick<Project, "name" | "description" | 
 };
 
 /**
+ * updateProject
+ * @param {Object}projectId - Project id to update
+ * @returns {Array}
+ */
+const updateProject = async (projectId: string, reqPayload: Partial<Pick<Project, "name" | "description">>): Promise<Project[]> => {
+  return db('project').update(reqPayload)
+    .where({ id: projectId })
+    .returning('*');
+};
+
+/**
  * deleteProject
  * @param {Object}projectId - project id to delete
  * @param {Object}trx - databse transaction object
@@ -133,6 +144,7 @@ const getAllProjectTeamMembers = async (projectId: string) => {
 
 export default {
   createProject,
+  updateProject,
   deleteProject,
   getAllProjects,
   getProjectById,

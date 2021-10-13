@@ -7,6 +7,8 @@ const router = express.Router();
 router.get('/', checkAuth, projectController.getAllProjects);
 router.post('/', checkAuth, projectController.createProject);
 router.get('/:id', checkAuth, projectController.getProjectById);
+router.patch('/:id', checkAuth, projectController.updateProject);
+router.delete('/:id', checkAuth, projectController.deleteProject);
 router.get('/:id/jobs', checkAuth, projectController.getAllJobsForProject);
 router.get('/:id/teams', checkAuth, projectController.getAllProjectTeamMembers);
 router.post('/:id/teams', checkAuth, projectController.inviteProjectTeamMembers);
