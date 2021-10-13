@@ -83,7 +83,7 @@ describe('Auth endpoints', () => {
     User.trackUserAuthToken = jest.fn();
     const response = await request.post('/api/auth/login').send(reqPayload);
     expect(User.getUserByEmail).toHaveBeenCalledWith(reqPayload.email);
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(404);
     expect(response.body.message).toEqual(
       'User not found. Provide valid email!',
     );
@@ -101,7 +101,7 @@ describe('Auth endpoints', () => {
     User.trackUserAuthToken = jest.fn();
     const response = await request.post('/api/auth/login').send(reqPayload);
     expect(User.getUserByEmail).toHaveBeenCalledWith(reqPayload.email);
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
     expect(response.body.message).toEqual('Password incorrect!');
   });
 
