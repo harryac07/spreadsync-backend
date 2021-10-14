@@ -266,7 +266,7 @@ const login = async (req, res, next) => {
 
         const validate = await User.isValidPassword(email, password);
         if (!validate) {
-          throw new BadRequest('Password incorrect!');
+          throw new AuthenticationError('Password incorrect!');
         }
 
         const authTokenPayload = _signAndGetAuthToken({
