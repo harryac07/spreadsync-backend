@@ -107,6 +107,16 @@ export const up = async (knex: Knex) => {
       created_on TIMESTAMP
     );
 
+    CREATE TABLE workflow(
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      name text,
+      project UUID REFERENCES project(id) ON DELETE CASCADE,
+      workflow jsonb NOT NULL,
+      created_by UUID REFERENCES "user"(id),
+      created_on TIMESTAMP,
+      UNIQUE (name, project)
+    );
+
     CREATE TABLE IF NOT EXISTS job_schedule(
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       job UUID REFERENCES job(id) ON DELETE CASCADE,
@@ -283,6 +293,7 @@ export const down = async (knex: Knex) => {
     DROP TABLE IF EXISTS history.subscription_history cascade;
     DROP TABLE IF EXISTS project cascade;
     DROP TABLE IF EXISTS job cascade;
+    DROP TABLE IF EXISTS workflow cascade;
     DROP TABLE IF EXISTS history.job_history cascade;
     DROP TABLE IF EXISTS job_schedule cascade;
     DROP TABLE IF EXISTS history.job_schedule_history cascade;

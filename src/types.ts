@@ -198,4 +198,16 @@ export type JwtDecodedType = {
   email?: string;
   user_id?: string;
 };
-
+export type WorkflowContent = {
+  block: string;
+  step: string | number;
+  values: string[];
+}
+export type WorkflowType = {
+  id: string;
+  name: string;
+  project: string;
+  workflow: WorkflowContent[];
+  created_by?: string;
+  created_on?: any;
+}

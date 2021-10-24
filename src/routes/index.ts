@@ -4,6 +4,7 @@ import { router as projectRouter } from './project';
 import { router as authRouter } from './auth';
 import { router as accountRouter } from './account';
 import { router as jobRouter } from './job';
+import { router as workflowRouter } from './workflow';
 import { router as googleSheetRouter } from './googleSheet';
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.use('/projects', projectRouter);
 router.use('/auth', authRouter);
 router.use('/accounts', accountRouter);
 router.use('/jobs', jobRouter);
+router.use('/workflows', workflowRouter);
 router.use('/sheets', googleSheetRouter);
 
 export default router;
