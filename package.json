@@ -36,7 +36,7 @@
     "googleapis": "^39.2.0",
     "helmet": "^3.23.3",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.20.13",
+    "knex": "^2.4.0",
     "lodash": "^4.17.20",
     "moment": "^2.26.0",
     "morgan": "^1.9.1",
